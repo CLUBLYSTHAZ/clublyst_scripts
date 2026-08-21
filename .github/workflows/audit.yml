@@ -9,9 +9,6 @@ jobs:
         with:
           node-version: '20'
       - run: npm install
-      - run: node scripts/build-conditions-live.mjs
-        env:
-          REQUIRE_SUPABASE_UPSERT: "false"
       - run: node scripts/audit-conditions-scoring.mjs > audit-output.json
       - uses: actions/upload-artifact@v4
         with:
