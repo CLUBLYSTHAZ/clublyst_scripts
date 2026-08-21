@@ -197,6 +197,16 @@ function drainagePenalty(bucket) {
   return 0;
 }
 
+function estimateDrainageBucket(soilType, elevationM) {
+  const soil = String(soilType || "").toLowerCase();
+  const elevated = Number(elevationM || 0) >= 150;
+
+  if (soil === "sand" || soil === "chalk") return elevated ? "D2" : "D1";
+  if (soil === "loam") return elevated ? "D3" : "D2";
+  if (soil === "clay" || soil === "peat") return elevated ? "D4" : "D3";
+  return "D3";
+}
+
 // ===========================================================================
 // ET₀ (Hargreaves-Samani) — FAO-56 Ra
 // ===========================================================================
@@ -832,11 +842,13 @@ async function main() {
       const met = metricsFromDaily(weather, club.latitude);
 
       const staticRow      = staticConditions?.[club.key] || null;
-      // Conservative default when static profile is missing: treat drainage as below average.
-      const drainageBucket = staticRow?.drainage_bucket || "D3";
       const courseType     = staticRow?.course_type   || "unknown";
       const soilType       = staticRow?.soil_type     || "loam";   // NEW
       const elevationM     = staticRow?.elevation_m   || 0;        // NEW
+      const estimatedDrainageBucket = staticRow?.drainage_bucket
+        ? null
+        : estimateDrainageBucket(soilType, elevationM);
+      const drainageBucket = staticRow?.drainage_bucket || estimatedDrainageBucket;
 
       const profile  = soilProfile(soilType);
       const dPenalty = drainagePenalty(drainageBucket);
@@ -910,6 +922,7 @@ async function main() {
         condition_label,
         condition_blurb,
         drainage_bucket: drainageBucket,
+        estimated_drainage_bucket: estimatedDrainageBucket,
         course_type:     courseType,
         soil_type:       soilType,
         elevation_m:     elevationM,
@@ -935,6 +948,7 @@ async function main() {
         reasons: row.reasons,          condition_label: row.condition_label,
         condition_blurb: row.condition_blurb,
         drainage_bucket: row.drainage_bucket,
+        estimated_drainage_bucket: row.estimated_drainage_bucket,
         course_type: row.course_type,  soil_type: row.soil_type,
         elevation_m: row.elevation_m,  drynessStress: row.drynessStress,
         buckets: row.buckets,
