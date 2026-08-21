@@ -130,14 +130,6 @@ function monthBucket(month) {
 
 // ===========================================================================
 // SOIL TYPE
-//
-// Add soil_type to course-conditions-static.json rows.
-// Valid values: "sand", "chalk", "loam", "clay", "peat"
-//
-//   fieldCap    — mm of rainfall before saturation occurs
-//   drainDays   — typical days to drain meaningful rainfall on this soil
-//   rainSens    — multiplier applied to raw rainfall before bucketing
-//                 (clay "feels" rain harder than sand)
 // ===========================================================================
 const SOIL_PROFILE = {
   sand:  { fieldCap: 20,  drainDays: 1.5, rainSens: 0.6 },
@@ -171,9 +163,6 @@ function courseTypeModifier(courseType) {
 
 // ===========================================================================
 // ELEVATION PENALTY
-//
-// Upland courses cool faster (lower ET₀), drain slower on steep terrain,
-// and have higher frost risk via the standard atmospheric lapse rate.
 // ===========================================================================
 function elevationPenalty(elevationM) {
   const e = Number(elevationM || 0);
@@ -182,7 +171,6 @@ function elevationPenalty(elevationM) {
   return 0;
 }
 
-// ~0.65°C per 100m lapse rate — reduces effective tmin for frost bucket
 function elevationTempLapse(elevationM) {
   return (Number(elevationM || 0) / 100) * 0.65;
 }
@@ -246,24 +234,9 @@ function computeSoilMoistureBalance(precipArr, tminArr, tmaxArr, latDeg, referen
 // ===========================================================================
 // SEASON-AWARE BUCKET THRESHOLDS
 // ===========================================================================
-
-/**
- * Rain bucket (72h accumulation, after soil rainSens scaling)
- *
- * The same raw mm matters far more in winter (low ET₀, saturated soil) than
- * summer (high ET₀, dry soil). Thresholds tighten progressively into winter.
- *
- * R0 = negligible  |  R1 = meaningful  |  R2 = heavy
- */
 function rainBucket(effectiveRain72hMm, season) {
-  //                  [R1_lower, R2_lower]
   const T = [
-    [10, 25], // 0 peak summer    — high ET₀ offsets light rain
-    [ 8, 20], // 1 late spring
-    [ 7, 18], // 2 early autumn
-    [ 6, 15], // 3 late autumn
-    [ 5, 12], // 4 winter         — even light rain is meaningful
-    [ 5, 12], // 5 early spring   — soils still near-saturated from winter
+    [10, 25], [ 8, 20], [ 7, 18], [ 6, 15], [ 5, 12], [ 5, 12],
   ];
   const [r1, r2] = T[season];
   if (effectiveRain72hMm >= r2) return "R2";
@@ -271,19 +244,6 @@ function rainBucket(effectiveRain72hMm, season) {
   return "R0";
 }
 
-/**
- * Since-rain bucket
- *
- * How recently it rained matters differently by both season and soil type.
- * Sandy soil in summer recovers in ~1–2 days; clay in winter may still be
- * wet 7–8 days after meaningful rain.
- *
- * We scale the T0/T1 thresholds by the soil's drainDays and a seasonal
- * multiplier (winter drainage is slower even for fast-draining soils because
- * ET₀ is near zero and ground may be near field capacity already).
- *
- * T0 = still effectively wet  |  T1 = drying  |  T2 = well clear
- */
 function sinceRainBucket(daysSinceRain5, season, drainDays) {
   const SEASON_MULT = [0.7, 0.85, 1.0, 1.3, 1.6, 1.4];
   const scaled = drainDays * SEASON_MULT[season];
@@ -294,44 +254,18 @@ function sinceRainBucket(daysSinceRain5, season, drainDays) {
   return "T2";
 }
 
-/**
- * Frost bucket
- *
- * The old threshold of 2°C for F1 was too permissive.
- * Radiation ground frost can occur when air temp is as high as 3–5°C on
- * clear, calm nights — standard agronomic guidance uses 4°C as the advisory
- * threshold for ground frost risk.
- *
- * We also apply the elevation lapse rate so upland courses are correctly
- * penalised (a 250m course is effectively ~1.6°C colder than sea level).
- *
- * F0 = no frost  |  F1 = ground frost possible  |  F2 = hard frost likely
- */
 function frostBucket(tmin3, elevationM) {
   const lapse        = elevationTempLapse(elevationM);
   const effectiveTmin = tmin3 - lapse;
-  if (effectiveTmin <= 0) return "F2"; // hard frost (corrected from -1)
-  if (effectiveTmin <= 4) return "F1"; // ground frost possible (corrected from 2)
+  if (effectiveTmin <= 0) return "F2";
+  if (effectiveTmin <= 4) return "F1";
   return "F0";
 }
 
-/**
- * Month bucket — 6 bands (scoring)
- * MB0–MB5 maps directly from seasonIndex (0–5).
- */
 function monthBucket6(season) {
   return `MB${season}`;
 }
 
-/**
- * Soil-moisture balance bucket
- *
- * Thresholds now scale with soil's field capacity so a reading of +20mm
- * means "saturated" for sandy soil but only "moist" for clay.
- *
- * S_dry = ground actively drying  |  S0 = near-neutral
- * S1 = meaningfully moist         |  S2 = saturated / near field capacity
- */
 function soilBucket(balance, fieldCap) {
   const saturated = fieldCap * 0.7;
   const moist     = fieldCap * 0.35;
@@ -341,19 +275,31 @@ function soilBucket(balance, fieldCap) {
   return "S_dry";
 }
 
-/** Apply soil rain-sensitivity before bucketing */
 function effectiveRain(rain72hMm, rainSens) {
   return rain72hMm * rainSens;
 }
 
-/**
- * Forecast bucket (next 48h)
- * FC0 = dry  |  FC1 = light  |  FC2 = heavy incoming
- */
 function forecastBucket(forecast48hMm) {
   if (forecast48hMm >= 10) return "FC2";
   if (forecast48hMm >= 4)  return "FC1";
   return "FC0";
+}
+
+// ===========================================================================
+// DRYNESS STRESS — continuous/scaled contributions (fixes threshold-cliff
+// saturation where distinct clubs all clamped to the same value)
+// ===========================================================================
+
+/**
+ * Linear interpolation between `from` and `to`, returning a contribution
+ * scaled to `maxValue`, clamped to [0, maxValue]. Works whether `from` is
+ * larger or smaller than `to` — direction is handled automatically.
+ */
+function scaledContribution(value, from, to, maxValue) {
+  if (from === to) return 0;
+  const t = (value - from) / (to - from);
+  const clamped = Math.max(0, Math.min(1, t));
+  return Math.round(clamped * maxValue * 100) / 100;
 }
 
 function computeDrynessStress({ metrics, season, drainageBucket, soilType }) {
@@ -363,52 +309,74 @@ function computeDrynessStress({ metrics, season, drainageBucket, soilType }) {
   const rain72hMm = Number(metrics?.rain72hMm ?? 0);
   const rain7dMm = Number(metrics?.rain7dMm ?? 0);
   const forecast48hMm = Number(metrics?.forecast48hMm ?? 0);
-  const maxTemp7dC = Number(metrics?.maxTemp7dC ?? 0);
   const drainage = String(drainageBucket || "").toUpperCase();
   const soil = String(soilType || "").toLowerCase();
+
+  const maxTemp7dCRaw = metrics?.maxTemp7dC;
+  const maxTemp7dCPresent =
+    maxTemp7dCRaw !== null && maxTemp7dCRaw !== undefined && Number.isFinite(Number(maxTemp7dCRaw));
+  const maxTemp7dC = maxTemp7dCPresent ? Number(maxTemp7dCRaw) : null;
+
+  const missingInputs = [];
+  if (!maxTemp7dCPresent) missingInputs.push("maxTemp7dC");
 
   let score = 0;
   const reasons = [];
 
-  if (balance <= -120) {
-    score += 1.2;
-    reasons.push("Soil moisture balance is extremely dry");
-  } else if (balance <= -80) {
-    score += 0.8;
-    reasons.push("Soil moisture balance is very dry");
-  } else if (balance <= -40) {
-    score += 0.4;
-    reasons.push("Soil moisture balance is drying out");
+  // Soil moisture balance: -40 (start) -> -180 (max dry), 0 -> 1.6
+  const balanceContribution = scaledContribution(balance, -40, -180, 1.6);
+  if (balanceContribution > 0) {
+    score += balanceContribution;
+    if (balance <= -80) reasons.push("Soil moisture balance is very dry");
+    else reasons.push("Soil moisture balance is drying out");
   }
 
-  if (et0Total >= 90) {
-    score += 0.8;
-    reasons.push("High evapotranspiration has been drying the course quickly");
-  } else if (et0Total >= 60) {
-    score += 0.4;
-    reasons.push("Recent drying demand is elevated");
+  // ET0: 60 -> 180, 0 -> 1.1
+  const et0Contribution = scaledContribution(et0Total, 60, 180, 1.1);
+  if (et0Contribution > 0) {
+    score += et0Contribution;
+    reasons.push(
+      et0Total >= 120
+        ? "High evapotranspiration has been drying the course quickly"
+        : "Recent drying demand is elevated"
+    );
   }
 
-  if (daysSinceRain5 >= 10) {
-    score += 0.5;
-    reasons.push("No meaningful rain for over a week");
-  } else if (daysSinceRain5 >= 7) {
-    score += 0.3;
-    reasons.push("Meaningful rain has been absent for several days");
+  // Days since meaningful rain: starts contributing at day 7 (+0.3),
+  // scales up to +0.9 by day 21
+  if (daysSinceRain5 >= 7) {
+    const daysContribution = 0.3 + scaledContribution(daysSinceRain5, 7, 21, 0.6);
+    score += daysContribution;
+    reasons.push(
+      daysSinceRain5 >= 14
+        ? "No meaningful rain for an extended period"
+        : "Meaningful rain has been absent for several days"
+    );
   }
 
-  if (rain7dMm < 2) score += 0.4;
-  else if (rain7dMm < 5) score += 0.2;
-  if (rain72hMm <= 0) score += 0.2;
-  if (forecast48hMm < 2) score += 0.2;
-  if (forecast48hMm >= 8) score -= 0.4;
+  // Rain in last 7 days: inverse, 5mm -> 0mm, 0 -> 0.4
+  score += scaledContribution(5 - rain7dMm, 0, 5, 0.4);
 
-  if (maxTemp7dC >= 28) {
-    score += 0.5;
-    reasons.push("Recent heat increases parched fairway risk");
-  } else if (maxTemp7dC >= 24) {
-    score += 0.25;
-    reasons.push("Recent warm days increase firm-ground risk");
+  // Rain in last 72h: inverse, 3mm -> 0mm, 0 -> 0.2
+  score += scaledContribution(3 - rain72hMm, 0, 3, 0.2);
+
+  // Forecast: dry forecast adds up to +0.2 (2mm -> 0mm), wet forecast
+  // subtracts continuously from 8mm -> 20mm, up to -0.4
+  score += scaledContribution(2 - forecast48hMm, 0, 2, 0.2);
+  score -= scaledContribution(forecast48hMm, 8, 20, 0.4);
+
+  // Recent heat — only when maxTemp7dC is actually available.
+  // Continuous from 20C (no contribution) to 32C (max contribution).
+  if (maxTemp7dCPresent) {
+    const heatContribution = scaledContribution(maxTemp7dC, 20, 32, 0.6);
+    if (heatContribution > 0) {
+      score += heatContribution;
+      reasons.push(
+        maxTemp7dC >= 26
+          ? "Recent heat increases parched fairway risk"
+          : "Recent warm days increase firm-ground risk"
+      );
+    }
   }
 
   if (season === 0) score += 0.4;
@@ -418,17 +386,20 @@ function computeDrynessStress({ metrics, season, drainageBucket, soilType }) {
   if (soil === "sand" || soil === "chalk") score += 0.2;
   if (soil === "clay" || soil === "peat") score -= 0.2;
 
-  score = Math.round(Math.max(0, Math.min(score, 3)) * 10) / 10;
+  // Widened clamp: 0-5 instead of 0-3, so subtotals like 3.7 and 4.4 don't
+  // collapse to the same ceiling.
+  score = Math.round(Math.max(0, Math.min(score, 5)) * 10) / 10;
 
   let level = "none";
-  if (score >= 2.4) level = "severe";
-  else if (score >= 1.5) level = "moderate";
+  if (score >= 3.6) level = "severe";
+  else if (score >= 2.2) level = "moderate";
   else if (score >= 0.7) level = "low";
 
   return {
     score,
     level,
     reasons: reasons.slice(0, 3),
+    missingInputs,
   };
 }
 
@@ -460,16 +431,14 @@ function computeRisk({
   drainagePenalty = 0, courseTypeMod = 0, elevPenalty = 0,
   rain7dMm = 0, wetDays7 = 0, soil, forecast,
 }) {
-  // Per-band month scores — Oct (MB2=2) is heavier than Mar (MB5=3 — spring
-  // soils are wetter). Winter (MB4=4) is heaviest.
   const monthScores = { MB0: 0, MB1: 1, MB2: 2, MB3: 3, MB4: 4, MB5: 3 };
 
   const p = {
-    R0: 0,   R1: 3,  R2: 6,          // rain (R2 up from 5)
-    T2: 0,   T1: 1,  T0: 3,          // since-rain (T0 up from 2)
-    F0: 0,   F1: 2,  F2: 5,          // frost (F2 up from 4)
-    S_dry: -3, S0: 0, S1: 3, S2: 6,  // soil balance (main fix — S1/S2 heavily weighted)
-    FC0: 0, FC1: 1, FC2: 3,          // forecast
+    R0: 0,   R1: 3,  R2: 6,
+    T2: 0,   T1: 1,  T0: 3,
+    F0: 0,   F1: 2,  F2: 5,
+    S_dry: -3, S0: 0, S1: 3, S2: 6,
+    FC0: 0, FC1: 1, FC2: 3,
   };
 
   let score =
@@ -484,40 +453,30 @@ function computeRisk({
     elevPenalty;
 
   if (rain7dMm >= 20) score += 2;
-  if (rain7dMm >= 35) score += 2; // tightened from 32
+  if (rain7dMm >= 35) score += 2;
   if (wetDays7 >= 4)  score += 1;
-  if (wetDays7 >= 6)  score += 2; // was +1 — persistent wet days now matter more
+  if (wetDays7 >= 6)  score += 2;
 
   score = Math.max(score, 0);
 
-  // Thresholds widened to match new scoring range:
-  // low ≤4  |  moderate ≤10  |  high >10
   let risk = score <= 4 ? "low" : score <= 10 ? "moderate" : "high";
 
-  // ---- Intuitive overrides ----
-
-  // Saturated soil + any meaningful rain = high regardless
   if (soil === "S2" && rain !== "R0") risk = "high";
 
-  // Hard frost: always moderate minimum; in winter/early spring → high
   if (frost === "F2") {
     risk = (month6 === "MB4" || month6 === "MB5") ? "high" : "moderate";
   }
 
-  // Heavy rain just fell = high regardless of soil or course type
   if (rain === "R2" && sinceRain === "T0") risk = "high";
 
-  // Dry soil prevents "high" purely from season/elevation/drainage signals
   if (soil === "S_dry" && rain === "R0" && drainagePenalty === 0 && courseTypeMod <= 0) {
     if (risk === "high") risk = "moderate";
   }
 
-  // Dry soil + fully clear conditions = always low
   if (soil === "S_dry" && rain === "R0" && sinceRain === "T2" && frost === "F0") {
     risk = "low";
   }
 
-  // Heavy forecast on moist/saturated soil bumps to at least moderate
   if (forecast === "FC2" && (soil === "S1" || soil === "S2")) {
     if (risk === "low") risk = "moderate";
   }
@@ -568,13 +527,9 @@ function deriveLabel(risk, buckets, metrics, drainageBucket, courseTypeMod, prof
   const et0Total  = Number(metrics?.et0Total14d ?? 0);
   const fc48h     = Number(metrics?.forecast48hMm || 0);
 
-  // ---- "Good Condition" gate ----
-  // Blocked entirely in winter/early spring (seasons 3–5) — ground is never
-  // reliably "good" between November and April in the UK.
-  // In summer/early autumn, requires all conditions to be met simultaneously.
   const isWarmSeason   = season <= 2;
   const soilDry        = balance < (profile.fieldCap * 0.2);
-  const et0Sufficient  = et0Total > (season === 0 ? 12 : 18); // higher bar outside peak summer
+  const et0Sufficient  = et0Total > (season === 0 ? 12 : 18);
   const noRecentRain   = rain72hMm < 3 && rain7dMm < 8 && wetDays7 <= 2;
   const goodForecast   = fc48h < 3;
   const noFrost        = buckets?.frost === "F0";
@@ -592,22 +547,18 @@ function deriveLabel(risk, buckets, metrics, drainageBucket, courseTypeMod, prof
 
   if (goodConditionGate) return "Good Condition";
 
-  // Saturated soil always at least Wet when risk isn't low
   if (buckets?.soil === "S2" && risk !== "low") return "Wet";
 
-  // Drainage + recent rain → Soft
   if (risk === "moderate" && dPenalty >= 1 && (buckets?.rain === "R1" || buckets?.sinceRain === "T0")) {
     return "Soft";
   }
 
-  // Heavy incoming forecast nudges label up one
   if (fc48h >= 10 && risk === "moderate") return "Soft";
   if (fc48h >= 10 && risk === "low")      return "Playable";
 
   if (risk === "low")      return "Playable";
   if (risk === "moderate") return "Playable";
 
-  // high
   return isWetDriven(buckets, metrics) || dPenalty >= 2 || buckets?.soil === "S2"
     ? "Wet"
     : "Soft";
@@ -650,7 +601,6 @@ function deriveBlurb(label, buckets, drainageBucket, courseType, metrics, season
     return "Conditions: Likely playable right now, with some softer areas possible.";
   }
 
-  // Good Condition
   if (isLinks)       return "Conditions: Dry spell and fast-draining ground — this course is likely in great shape right now.";
   if (balance < -10) return "Conditions: Extended dry period has firmed the ground up well — should be playing nicely.";
   return "Conditions: Likely playing well right now, with fewer signs of weather impact recently.";
@@ -683,7 +633,6 @@ function metricsFromDaily(json, latDeg) {
   const tmins  = json?.daily?.temperature_2m_min ?? [];
   const tmaxs  = json?.daily?.temperature_2m_max ?? [];
 
-  // 0–13 = past 14 days | 14–16 = today + 2 forecast days
   const past          = precip.slice(0, 14);
   const forecastSlice = precip.slice(14, 17);
   const past7         = past.slice(-7);
@@ -768,7 +717,7 @@ async function main() {
   const u      = uniqueClubs(clubs);
   const month  = londonMonthNow();
   const season = seasonIndex(month);
-  const mBucket = monthBucket(month); // legacy 3-band for blurb logic
+  const mBucket = monthBucket(month);
 
   console.log(`Unique clubs with geo: ${u.length} | Season index: ${season} (${
     ["peak summer","late spring","early autumn","late autumn","winter","early spring"][season]
@@ -797,11 +746,10 @@ async function main() {
       const met = metricsFromDaily(weather, club.latitude);
 
       const staticRow      = staticConditions?.[club.key] || null;
-      // Conservative default when static profile is missing: treat drainage as below average.
       const drainageBucket = staticRow?.drainage_bucket || "D3";
       const courseType     = staticRow?.course_type   || "unknown";
-      const soilType       = staticRow?.soil_type     || "loam";   // NEW
-      const elevationM     = staticRow?.elevation_m   || 0;        // NEW
+      const soilType       = staticRow?.soil_type     || "loam";
+      const elevationM     = staticRow?.elevation_m   || 0;
 
       const profile  = soilProfile(soilType);
       const dPenalty = drainagePenalty(drainageBucket);
@@ -814,8 +762,8 @@ async function main() {
         rain:      rainBucket(effRain72h, season),
         sinceRain: sinceRainBucket(met.daysSinceRain5, season, profile.drainDays),
         frost:     frostBucket(met.tmin3, elevationM),
-        month:     mBucket,              // legacy 3-band (blurb only)
-        month6:    monthBucket6(season), // 6-band (scoring)
+        month:     mBucket,
+        month6:    monthBucket6(season),
         soil:      soilBucket(met.soilMoistureBalance, profile.fieldCap),
         forecast:  forecastBucket(met.forecast48hMm),
       };
@@ -870,7 +818,6 @@ async function main() {
         soil_type:       soilType,
         elevation_m:     elevationM,
         drynessStress,
-        // Internal/debug only — not for UI rendering
         buckets,
         metrics: met,
         season_index: season,
