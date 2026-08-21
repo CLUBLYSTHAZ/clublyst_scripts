@@ -179,6 +179,17 @@ function hasRequiredLiveInputs(row) {
   );
 }
 
+// ===========================================================================
+// Mirrors the fixed logic in build-conditions-live.mjs. Kept in sync manually
+// for now — flagged as a follow-up to extract into one shared module.
+// ===========================================================================
+function scaledContribution(value, from, to, maxValue) {
+  if (from === to) return 0;
+  const t = (value - from) / (to - from);
+  const clamped = Math.max(0, Math.min(1, t));
+  return Math.round(clamped * maxValue * 100) / 100;
+}
+
 function computeDrynessStress(row) {
   const metrics = row.metrics || {};
   const balance = Number(metrics.soilMoistureBalance ?? 0);
@@ -187,53 +198,64 @@ function computeDrynessStress(row) {
   const rain72hMm = Number(metrics.rain72hMm ?? 0);
   const rain7dMm = Number(metrics.rain7dMm ?? 0);
   const forecast48hMm = Number(metrics.forecast48hMm ?? 0);
-  const maxTemp7dC = Number(metrics.maxTemp7dC ?? 0);
   const season = Number(row.season_index ?? 0);
   const drainage = String(row.drainage_bucket || "").toUpperCase();
   const soil = String(row.soil_type || "").toLowerCase();
 
+  const maxTemp7dCRaw = metrics.maxTemp7dC;
+  const maxTemp7dCPresent =
+    maxTemp7dCRaw !== null && maxTemp7dCRaw !== undefined && Number.isFinite(Number(maxTemp7dCRaw));
+  const maxTemp7dC = maxTemp7dCPresent ? Number(maxTemp7dCRaw) : null;
+
+  const missingInputs = [];
+  if (!maxTemp7dCPresent) missingInputs.push("maxTemp7dC");
+
   let score = 0;
   const reasons = [];
 
-  if (balance <= -120) {
-    score += 1.2;
-    reasons.push("Soil moisture balance is extremely dry");
-  } else if (balance <= -80) {
-    score += 0.8;
-    reasons.push("Soil moisture balance is very dry");
-  } else if (balance <= -40) {
-    score += 0.4;
-    reasons.push("Soil moisture balance is drying out");
+  const balanceContribution = scaledContribution(balance, -40, -180, 1.6);
+  if (balanceContribution > 0) {
+    score += balanceContribution;
+    reasons.push(
+      balance <= -80 ? "Soil moisture balance is very dry" : "Soil moisture balance is drying out"
+    );
   }
 
-  if (et0Total >= 90) {
-    score += 0.8;
-    reasons.push("High evapotranspiration has been drying the course quickly");
-  } else if (et0Total >= 60) {
-    score += 0.4;
-    reasons.push("Recent drying demand is elevated");
+  const et0Contribution = scaledContribution(et0Total, 60, 180, 1.1);
+  if (et0Contribution > 0) {
+    score += et0Contribution;
+    reasons.push(
+      et0Total >= 120
+        ? "High evapotranspiration has been drying the course quickly"
+        : "Recent drying demand is elevated"
+    );
   }
 
-  if (daysSinceRain5 >= 10) {
-    score += 0.5;
-    reasons.push("No meaningful rain for over a week");
-  } else if (daysSinceRain5 >= 7) {
-    score += 0.3;
-    reasons.push("Meaningful rain has been absent for several days");
+  if (daysSinceRain5 >= 7) {
+    const daysContribution = 0.3 + scaledContribution(daysSinceRain5, 7, 21, 0.6);
+    score += daysContribution;
+    reasons.push(
+      daysSinceRain5 >= 14
+        ? "No meaningful rain for an extended period"
+        : "Meaningful rain has been absent for several days"
+    );
   }
 
-  if (rain7dMm < 2) score += 0.4;
-  else if (rain7dMm < 5) score += 0.2;
-  if (rain72hMm <= 0) score += 0.2;
-  if (forecast48hMm < 2) score += 0.2;
-  if (forecast48hMm >= 8) score -= 0.4;
+  score += scaledContribution(5 - rain7dMm, 0, 5, 0.4);
+  score += scaledContribution(3 - rain72hMm, 0, 3, 0.2);
+  score += scaledContribution(2 - forecast48hMm, 0, 2, 0.2);
+  score -= scaledContribution(forecast48hMm, 8, 20, 0.4);
 
-  if (maxTemp7dC >= 28) {
-    score += 0.5;
-    reasons.push("Recent heat increases parched fairway risk");
-  } else if (maxTemp7dC >= 24) {
-    score += 0.25;
-    reasons.push("Recent warm days increase firm-ground risk");
+  if (maxTemp7dCPresent) {
+    const heatContribution = scaledContribution(maxTemp7dC, 20, 32, 0.6);
+    if (heatContribution > 0) {
+      score += heatContribution;
+      reasons.push(
+        maxTemp7dC >= 26
+          ? "Recent heat increases parched fairway risk"
+          : "Recent warm days increase firm-ground risk"
+      );
+    }
   }
 
   if (season === 0) score += 0.4;
@@ -243,14 +265,14 @@ function computeDrynessStress(row) {
   if (soil === "sand" || soil === "chalk") score += 0.2;
   if (soil === "clay" || soil === "peat") score -= 0.2;
 
-  score = Math.round(clamp(score, 0, 3) * 10) / 10;
+  score = Math.round(clamp(score, 0, 5) * 10) / 10;
 
   let level = "none";
-  if (score >= 2.4) level = "severe";
-  else if (score >= 1.5) level = "moderate";
+  if (score >= 3.6) level = "severe";
+  else if (score >= 2.2) level = "moderate";
   else if (score >= 0.7) level = "low";
 
-  return { score, level, reasons: reasons.slice(0, 3) };
+  return { score, level, reasons: reasons.slice(0, 3), missingInputs };
 }
 
 function computeConditionScore10(row, drynessStress) {
@@ -289,11 +311,11 @@ function proposedScorer(row, staticByLookupKey, now) {
   const fresh = hasFreshLiveRow(row, now);
   const confidence = hasRealStaticDrainage && fresh ? "high" : fresh ? "medium" : "low";
 
-  const drynessStress = row.drynessStress || computeDrynessStress(row);
-  const score =
-    typeof row.condition_score_10 === "number"
-      ? row.condition_score_10
-      : computeConditionScore10(row, drynessStress);
+  // Always recompute from raw inputs rather than trusting row.drynessStress,
+  // since stored rows may have been generated by an older version of the
+  // scoring logic (this was the source of a prior stale-data bug).
+  const drynessStress = computeDrynessStress(row);
+  const score = computeConditionScore10(row, drynessStress);
 
   let label = "Wet";
   if (score >= 8.2) label = "Firm";
