@@ -1,0 +1,39 @@
+name: Build live course conditions
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 7 * * 1,4" # Mon & Thu 07:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build live conditions (and upsert Supabase)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REQUIRE_SUPABASE_UPSERT: "true"
+        run: node scripts/build-conditions-live.mjs
+
+      - name: Commit JSON changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/course-conditions-live.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Update live course conditions"
+          git pull --rebase origin main
+          git push origin HEAD:main
