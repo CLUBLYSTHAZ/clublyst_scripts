@@ -48,6 +48,16 @@ function toDrainageProxyBand(drainageBucket) {
   return "unknown";
 }
 
+function estimateDrainageBucket(soilType, elevationM) {
+  const soil = String(soilType || "").toLowerCase();
+  const elevated = Number(elevationM || 0) >= 150;
+
+  if (soil === "sand" || soil === "chalk") return elevated ? "D2" : "D1";
+  if (soil === "loam") return elevated ? "D3" : "D2";
+  if (soil === "clay" || soil === "peat") return elevated ? "D4" : "D3";
+  return "D3";
+}
+
 function hasFreshLiveRow(row, now) {
   const updatedAt = Date.parse(row.updated_at || "");
   if (!Number.isFinite(updatedAt)) return false;
@@ -204,6 +214,49 @@ function buildStaticLookup(staticRowsByKey) {
   return map;
 }
 
+function compareDrainageEstimateToStatic(rows, staticByLookupKey) {
+  const comparableRows = rows
+    .map((row) => {
+      const staticRow =
+        staticByLookupKey.get(normalizeClubNameForLookup(row.club_name)) || null;
+      if (!staticRow?.drainage_bucket) return null;
+      const estimatedBucket = estimateDrainageBucket(
+        row.soil_type || staticRow.soil_type,
+        row.elevation_m ?? staticRow.elevation_m
+      );
+      return {
+        club_name: row.club_name,
+        realDrainage: String(staticRow.drainage_bucket).toUpperCase(),
+        estimatedDrainage: estimatedBucket,
+        realProxy: toDrainageProxyBand(staticRow.drainage_bucket),
+        estimatedProxy: toDrainageProxyBand(estimatedBucket),
+      };
+    })
+    .filter(Boolean);
+
+  const exactMismatches = comparableRows.filter(
+    (row) => row.realDrainage !== row.estimatedDrainage
+  );
+  const proxyMismatches = comparableRows.filter(
+    (row) => row.realProxy !== row.estimatedProxy
+  );
+
+  return {
+    totalCompared: comparableRows.length,
+    exactMatches: comparableRows.length - exactMismatches.length,
+    exactMismatches: exactMismatches.length,
+    exactErrorRate: comparableRows.length
+      ? exactMismatches.length / comparableRows.length
+      : 0,
+    proxyMatches: comparableRows.length - proxyMismatches.length,
+    proxyMismatches: proxyMismatches.length,
+    proxyErrorRate: comparableRows.length
+      ? proxyMismatches.length / comparableRows.length
+      : 0,
+    mismatchExamples: exactMismatches.slice(0, 10),
+  };
+}
+
 function auditRows(rows, staticByLookupKey, now) {
   const distribution = {
     total: 0,
@@ -317,19 +370,23 @@ function main() {
         exampleClubs: examples,
         wetLabelExamples,
         drainageFallback: {
-          assumedDefault: "D3",
+          previousFlatDefault: "D3",
           realStaticDrainageRows: rows.filter((row) =>
             Boolean(
               staticByLookupKey.get(normalizeClubNameForLookup(row.club_name))
                 ?.drainage_bucket
             )
           ).length,
-          liveD3FallbackRows: rows.filter((row) => {
+          liveEstimatedDrainageRows: rows.filter((row) => {
             const staticRow = staticByLookupKey.get(
               normalizeClubNameForLookup(row.club_name)
             );
-            return !staticRow?.drainage_bucket && row.drainage_bucket === "D3";
+            return !staticRow?.drainage_bucket && row.drainage_bucket;
           }).length,
+          estimatedDrainageComparison: compareDrainageEstimateToStatic(
+            rows,
+            staticByLookupKey
+          ),
         },
         allowedMoistureLabels: ["Firm", "Good", "Soft", "Wet"],
       },
@@ -340,3 +397,4 @@ function main() {
 }
 
 main();
+
