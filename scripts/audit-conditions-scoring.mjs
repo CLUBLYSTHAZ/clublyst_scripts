@@ -216,6 +216,7 @@ function auditRows(rows, staticByLookupKey, now) {
     hiddenReasons: {},
   };
   const examples = {};
+  const wetLabelExamples = [];
 
   for (const row of rows) {
     distribution.total++;
@@ -251,6 +252,20 @@ function auditRows(rows, staticByLookupKey, now) {
     increment(distribution.confidence, confidence);
     increment(distribution.dryStressFlag, dryStressFlag);
 
+    if (moistureLabel === "Wet" && wetLabelExamples.length < 3) {
+      wetLabelExamples.push({
+        club_name: row.club_name,
+        moisture_score_10: moistureScore,
+        moisture_label: moistureLabel,
+        buckets: {
+          rain: row.buckets?.rain ?? null,
+          soil: row.buckets?.soil ?? null,
+          forecast: row.buckets?.forecast ?? null,
+        },
+        dryStressFlag,
+      });
+    }
+
     if (EXAMPLE_KEYS.includes(row.club_key)) {
       examples[row.club_key] = {
         club_name: row.club_name,
@@ -273,7 +288,7 @@ function auditRows(rows, staticByLookupKey, now) {
     }
   }
 
-  return { distribution, examples };
+  return { distribution, examples, wetLabelExamples };
 }
 
 function main() {
@@ -282,7 +297,11 @@ function main() {
   const rows = Object.values(liveRowsByKey).filter((row) => row && !row.error);
   const staticByLookupKey = buildStaticLookup(staticRowsByKey);
   const now = new Date();
-  const { distribution, examples } = auditRows(rows, staticByLookupKey, now);
+  const { distribution, examples, wetLabelExamples } = auditRows(
+    rows,
+    staticByLookupKey,
+    now
+  );
 
   console.log(
     JSON.stringify(
@@ -296,6 +315,7 @@ function main() {
         },
         proposedScorer: distribution,
         exampleClubs: examples,
+        wetLabelExamples,
         drainageFallback: {
           assumedDefault: "D3",
           realStaticDrainageRows: rows.filter((row) =>
