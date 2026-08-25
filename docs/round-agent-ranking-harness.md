@@ -68,17 +68,19 @@ prefer Surrey/Berkshire/south-west corridors
 prefer longer/full 18 courses
 avoid over-ranking North London purely because it is "near London"
 include pace/weekend/fourball caveats
+include travel friction, booking ease, weather/condition and round-duration signals where available
 ```
 
 Expected trade-off codes:
 
 ```text
-weekend_capacity_not_confirmed
-pace_not_confirmed
-fourball_fit_proxy_only
+availability_stale_or_low_confidence
+weekend_capacity_not_confirmed, when no weekend availability signal exists
+pace_not_confirmed, when no pace proxy signal exists
+fourball_fit_proxy_only, when no four-ball signal exists
 ```
 
-Those are good signs. They mean the system is being honest about what it cannot directly know yet.
+Those are good signs when the supporting data is absent or stale. They mean the system is being honest about what it cannot directly know yet.
 
 ---
 
@@ -104,23 +106,33 @@ The harness currently uses deterministic signals already in Supabase:
 ```text
 access_fit
 access_corridor
+travel_friction_fit
 long_course_fit
 full_18_fit
 beginner_friendly
 difficulty_fit
 wet_weather_fit
+weather_impact_fit
+condition_freshness
 value_fit
 booking_route_confidence
+booking_ease_score
+availability_confidence
+weekend_availability_fit
+fourball_fit
+pace_of_play_proxy
+round_duration_risk
 round_agent_data_quality
 ```
 
-The following are not direct data yet and are represented as caveats/proxies:
+The following remain proxy-led and should be explained carefully:
 
 ```text
 fourball_fit
-weekend_capacity_proxy
+weekend_availability_fit
 pace_of_play_proxy
-weekend_crowding_risk
+round_duration_risk
+travel_friction_fit
 ```
 
-Do not build user-facing claims around those until the premium proxy layer is enriched.
+Do not claim exact quietness, exact journey time or exact round duration unless direct supporting evidence exists. For beta, phrase these as fit/risk signals.
