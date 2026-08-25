@@ -133,6 +133,7 @@ function confidenceScore(confidence) {
 }
 
 function signalScore(signal, fallback = 50) {
+  if (signal?.confidence === "low") return fallback;
   const score = Number(signal?.signal_score);
   if (Number.isFinite(score)) return clamp(score);
   const value = String(signal?.signal_value || "").toLowerCase();
@@ -287,14 +288,22 @@ function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
   if (intent.wants_easy && beginnerSignal?.signal_value === "strong") reasonCodes.push("beginner_friendly");
   if (intent.wants_wet_weather && wetSignal?.signal_value === "strong") reasonCodes.push("wet_weather_fit");
   if (intent.wants_value && valueSignal?.signal_value === "strong") reasonCodes.push("strong_value");
-  if (availabilitySignal?.signal_value === "strong") reasonCodes.push("fresh_availability");
-  if ((intent.wants_weekend || intent.wants_low_crowding) && weekendSignal?.signal_value === "strong") {
+  if (availabilitySignal?.signal_value === "strong" && availabilitySignal?.confidence !== "low") reasonCodes.push("fresh_availability");
+  if (
+    (intent.wants_weekend || intent.wants_low_crowding) &&
+    weekendSignal?.signal_value === "strong" &&
+    weekendSignal?.confidence !== "low"
+  ) {
     reasonCodes.push("weekend_availability_fit");
   }
-  if (intent.players && intent.players >= 4 && fourballSignal?.signal_value === "strong") {
+  if (intent.players && intent.players >= 4 && fourballSignal?.signal_value === "strong" && fourballSignal?.confidence !== "low") {
     reasonCodes.push("fourball_fit");
   }
-  if ((intent.wants_pace || intent.wants_low_crowding) && paceSignal?.signal_value === "strong") {
+  if (
+    (intent.wants_pace || intent.wants_low_crowding) &&
+    paceSignal?.signal_value === "strong" &&
+    paceSignal?.confidence !== "low"
+  ) {
     reasonCodes.push("pace_proxy_positive");
   }
   if (bookingSignal?.signal_value !== "weak") reasonCodes.push("booking_route_available");
@@ -302,13 +311,21 @@ function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
   if ((intent.wants_weekend || intent.wants_low_crowding) && !weekendSignal) {
     tradeoffCodes.push("weekend_capacity_not_confirmed");
   }
-  if ((intent.wants_weekend || intent.wants_low_crowding) && weekendSignal?.signal_value === "weak") {
+  if (
+    (intent.wants_weekend || intent.wants_low_crowding) &&
+    weekendSignal?.signal_value === "weak" &&
+    weekendSignal?.confidence !== "low"
+  ) {
     tradeoffCodes.push("limited_weekend_availability");
   }
   if (intent.wants_low_crowding && !paceSignal) {
     tradeoffCodes.push("crowding_not_confirmed");
   }
-  if ((intent.wants_pace || intent.wants_low_crowding) && paceSignal?.signal_value === "weak") {
+  if (
+    (intent.wants_pace || intent.wants_low_crowding) &&
+    paceSignal?.signal_value === "weak" &&
+    paceSignal?.confidence !== "low"
+  ) {
     tradeoffCodes.push("pace_proxy_weak");
   }
   if (intent.wants_pace && !paceSignal) {
@@ -317,7 +334,12 @@ function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
   if (intent.players && intent.players >= 4 && !fourballSignal) {
     tradeoffCodes.push("fourball_fit_proxy_only");
   }
-  if (intent.players && intent.players >= 4 && fourballSignal?.signal_value !== "strong") {
+  if (
+    intent.players &&
+    intent.players >= 4 &&
+    fourballSignal?.signal_value !== "strong" &&
+    fourballSignal?.confidence !== "low"
+  ) {
     tradeoffCodes.push("fourball_availability_limited_or_proxy");
   }
   if (availabilitySignal?.confidence === "low") {
