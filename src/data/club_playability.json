@@ -1,0 +1,2788 @@
+{
+  "clubs": [
+    {
+      "name": "Addington Court Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Banstead Downs Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Betchworth Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Beauport Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Coombe Wood Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Croham Hurst Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Cuddington Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Epsom Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Foxhills Golf Club (Longcross)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Hampton Court Palace Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hersham Golf Club",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Holtye Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Kingswood Golf & Country Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Maldon Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Mannings Heath Golf Club (Waterfall)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Mid Kent Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Pyrford Lakes",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Richmond Park Golf Club",
+      "difficulty": "easy",
+      "lengthBand": "medium",
+      "holes": 36
+    },
+    {
+      "name": "The Richmond Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sandown Park Golf Centre (Eclipse)",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Surbiton Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Surrey National Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Sweetwoods Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Tandridge Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Oaks Golf Centre (Carshalton)",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Tyrrells Wood Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Woking Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "West Middlesex Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Woldingham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Woodcote Park Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Wyke Green Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Fulwell Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Ealing Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Enfield Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Grims Dyke Golf Club",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Hampstead Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Finchley Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hendon Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Lee Valley Golf Course",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Mill Hill Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Muswell Hill Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "North Middlesex Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Northwood Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Old Fold Manor Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Pinner Hill Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Stanmore Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Stockley Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sunbury Golf Centre (18-hole)",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Trent Park Golf Centre",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Sundridge Park Golf Club (East & West Courses)",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 36
+    },
+    {
+      "name": "Wimbledon Common Golf Club",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Bedfordshire Golf Club (Stagsden Course)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Aspley Guise & Woburn Sands Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Leighton Buzzard Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "John O'Gaunt Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Millbrook Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Dunstable Downs Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Tilsworth Golf & Conference Centre",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Bedford & County Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Pavenham Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Cainhoe Wood Golf Club (Castle Course)",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "South Beds Golf Club (Galley Hill)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Calcot Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "East Berkshire Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Donnington Grove Country Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Goring & Streatley Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Newbury & Crookham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Royal Ascot Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hennerton Golf Club",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Harleyford Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Chiltern Forest Golf Club",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "The South Buckinghamshire Golf Course",
+      "difficulty": "easy",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hazlemere Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Brampton Park Golf Course",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Heydon Grange Golf & Country Club (Cambs + Essex)",
+      "difficulty": "easy",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sandy Lodge Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Goring & Streatley Golf Club (Yellow tees basis)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Newbury & Crookham Golf Club (White tees basis)",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Girton Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Ramsey Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "March Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Cambridge Meridian Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ely City Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Royston Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "St Neots Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Prestbury Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Mere Golf Resort & Spa",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Wilmslow Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Ringway Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Macclesfield Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Alderley Edge Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sandiway Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Eaton Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Portal Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 36
+    },
+    {
+      "name": "Northenden Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ringway Village Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Broome Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Perranporth Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "West Cornwall Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Mullion Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Lanhydrock Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Carlyon Bay Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Above the Bay Golf Club (Falmouth Golf Club)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Truro Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "China Fleet Country Club (Golf Course)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Bowood Park Hotel & Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Newquay Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Silloth on Solway Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Penrith Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Kendal Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Barrow Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "St Bees Golf Club (St Bees School GC)",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Furness Golf Club (Old Links)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Seascale Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Cockermouth Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Ulverston Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Windermere Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Brampton Golf Club (Cumbria)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Keswick Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Kirkby Lonsdale Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Buxton & High Peak Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Chesterfield Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Chevin Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Matlock Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Horsley Lodge Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Ormonde Fields Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Ashbourne Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Erewash Valley Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Mickleover Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Brailsford Golf Course",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Brancepeth Castle Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Durham City Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ramside Hall Hotel, Golf & Spa (Prince Bishop & Cathedral)",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 36
+    },
+    {
+      "name": "Beamish Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hartlepool Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Eaglescliffe Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Dinsdale Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Barnard Castle Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Wearside Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Colchester Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Romford Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Braintree Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Stoneham Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Brokenhurst Manor Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "North Hants Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Liphook Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Britannia Hotels (Golf venue listing)",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Romsey Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Waterlooville Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hartley Wintney Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Shendish Manor Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Aldenham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Letchworth Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Mid Herts Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Verulam Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Chesfield Downs Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Mill Green Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Canterbury Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Littlestone Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Sittingbourne & Milton Regis Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Weald of Kent Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Chestfield Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sundridge Park Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 36
+    },
+    {
+      "name": "Redlibbets Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Fairhaven Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Hesketh Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Lancaster Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Lytham Green Drive Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Morecambe Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Pleasington Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Preston Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "St Annes Old Links Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Accrington & District Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Clitheroe Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Royal Norwich Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Caister Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Sheringham Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Swaffham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Eaton Golf Club (Norfolk)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Thetford Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Dereham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Fakenham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bawburgh Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Caldecott Hall Country Club (Golf Course)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Lincoln Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Louth Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Market Rasen Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Spalding Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Kenwick Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Carholme Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Holme Hall Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Boston Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Grimsby Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Elsham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Toft Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Stamford Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Bamburgh Castle Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Alnmouth Village Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hexham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Goswick Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Morpeth Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Ponteland Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Burgham Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Newcastle United Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Wooler Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Rothbury Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Prudhoe Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bedlingtonshire Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Seahouses Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Radcliffe-on-Trent Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Stanton-on-the-Wolds Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Worksop Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Oakmere Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sherwood Forest Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Beeston Fields Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "The Nottinghamshire Golf & Country Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Chilwell Manor Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Serlby Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Mapperley Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Norwood Park Golf Centre",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Oxfordshire Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "The Cotswolds Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "North Oxford Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bicester Hotel Golf & Spa (Chesterton)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Studley Wood Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Oxford Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Tadmarton Heath Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Telford Hotel, Spa & Golf Resort (Warner Hotels)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Caversham Heath Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Oswestry Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hawkstone Park Golf Club (Hawkstone Course)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Llanymynech Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bridgnorth Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ludlow Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Shrewsbury Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Market Drayton Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Arscott Golf Club",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Church Stretton Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Mile End Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Enmore Park Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Mendip Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Taunton & Pickeridge Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Weston-super-Mare Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Worlebury Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bath Golf Club (Sham Castle)",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Long Sutton Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Wells Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "South Staffordshire Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bloxwich Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Drayton Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Sandwell Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Leek Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ingestre Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "East Sussex National Golf Club (East & West)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 36
+    },
+    {
+      "name": "Worthing Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Dyke Golf Club, Brighton",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Seaford Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Haywards Heath Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Cooden Beach Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bognor Regis Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ifield Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Cowdray Park Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Pilt Down Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Stoneleigh Deer Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Nuneaton Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Moor Hall Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Rugby Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Maxstoke Park Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "North Warwickshire Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Salisbury & South Wilts Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ogbourne Downs Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "North Wilts Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Wrag Barn Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Rushmore Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "High Post Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Upavon Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Tidworth Garrison Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Worcester Golf & Country Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Droitwich Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Redditch Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Vale Golf & Country Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bewdley Pines Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ombersley Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Little Lakes Country Park Golf Club",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Broadway Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Evesham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Kings Norton Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sand Moor Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Headingley Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Shipley Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Northcliffe Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bingley St Ives Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Wakefield Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bradley Hall Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Horsforth Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Wath Upon Dearne Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Rotherham Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Dore & Totley Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Doncaster Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hillsborough Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Waterfront Golf (Lakeside)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Tankersley Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Woolley Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Broadstone Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Ferndown Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Purbeck Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Dorset Golf Resort",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Came Down Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bridport & West Dorset Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Lyme Regis Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Knighton Heath Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Wareham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sherborne Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Queens Park Golf Course (Bournemouth)",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Langley Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Leatherhead Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Northamptonshire Golf Club (Whittlebury Park)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Aquarius Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "London Airlinks Golf Course",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "The Inspiration Club",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 9
+    },
+    {
+      "name": "Mount Pleasant View Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Middleton Hall Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Woodhall Spa Golf Club (Hotchkin)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Seacroft Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Tynemouth Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Rufford Park Golf & Country Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Wrekin Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Horsehay Village Golf Centre",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Worfield Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Burnham & Berrow Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Orchardleigh Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Mendip Spring Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Stockwood Vale Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Oake Manor Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "The Castle Golf & Leisure (Taunton)",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "The Branston Golf & Country Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Mannings Heath Golf Club (Kingfisher)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Brighton & Hove Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Chichester Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Kenilworth Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Leamington & County Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Atherstone Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Ladbrook Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Bowood Golf (Bowood Hotel, Spa & Golf Resort)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Marlborough Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Cumberwell Park Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 27
+    },
+    {
+      "name": "Kingsdown Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "The Manor House Golf Club (Castle Combe)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Woodbridge Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bromsgrove Golf Centre",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Hagley Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Birchwood Park Golf & Country Club (KAL / BPGC)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Howley Hall Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Sitwell Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Parkstone Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Remedy Oak Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Bulbury Woods Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Crane Valley Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Cavendish Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Chapel-en-le-Frith Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Castle Eden Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Billingham Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Blackwell Grange Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Bishop Auckland Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Chigwell Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Orsett Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Stock Brook Country Club (Golf Course)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Theydon Bois Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hainault Forest Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Hayling Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Royal Winchester Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "South Winchester Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Hampshire Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Alresford Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Harpenden Common Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Carus Green Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Whitsand Bay Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Broome Park Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Above the Bay Golf Club (Falmouth Golf Club)",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Glendale Golf (Richmond Park Golf Course)",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 36
+    },
+    {
+      "name": "Alwoodley Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Bradford Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Cleeve Hill Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Royal Cinque Ports Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Denham Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Formby Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Ganton Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Hillside Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Royal Liverpool Golf Club (Hoylake)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Hunstanton Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Knowle Golf Club (Bristol)",
+      "difficulty": "easy",
+      "lengthBand": "short",
+      "holes": 18
+    },
+    {
+      "name": "Lindrick Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "North Foreland Golf Club (Main Course)",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Notts Golf Club (Hollinwell)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Prince's Golf Club (Shore/Dunes/Himalayas)",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 27
+    },
+    {
+      "name": "Royal Birkdale Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Royal West Norfolk Golf Club (Brancaster)",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Sheringham Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Shirley Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Southport & Ainsdale Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Southport Old Links Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "The Addington Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Wallasey Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "West Hill Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "West Lancashire Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Woking Golf Club",
+      "difficulty": "medium",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Woodhall Spa Golf Club (Hotchkin Course)",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Arkley Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Beaconsfield Golf Club",
+      "difficulty": "moderate",
+      "lengthBand": "medium",
+      "holes": 18
+    },
+    {
+      "name": "Centurion Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Royal St George's Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+    {
+      "name": "Saunton Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 36
+    },
+    {
+      "name": "St George's Hill Golf Club",
+      "difficulty": "hard",
+      "lengthBand": "long",
+      "holes": 18
+    },
+  { "name": "Breadsall Priory Country Club (Championship Priory Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Forest of Arden Country Club (Championship Arden Course)", "difficulty": "challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "Forest of Arden Country Club (Aylesford Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Breadsall Priory Country Club (Moorland Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Oakmere Golf Club (Admirals Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Oakmere Golf Club (Commanders Course)", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "Stonebridge Golf Club (Blythe Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Stonebridge Golf Club (Hampton Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Stonebridge Golf Club (Somers Course)", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "Queen's Park Golf Club", "difficulty": "easy", "lengthBand": "short", "holes": 18 },
+  { "name": "Ashley Wood Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Burley Golf Club", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "Bristol & Clifton Golf Club", "difficulty": "challenging", "lengthBand": "medium", "holes": 18 },
+  { "name": "Lansdown Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Long Ashton Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "The Wiltshire Hotel, Golf & Leisure Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Bude & North Cornwall Golf Club", "difficulty": "challenging", "lengthBand": "medium", "holes": 18 },
+  { "name": "Cape Cornwall Golf Club", "difficulty": "moderate", "lengthBand": "short", "holes": 18 },
+  { "name": "St Enodoc Golf Club (Church Course)", "difficulty": "challenging", "lengthBand": "medium", "holes": 18 },
+  { "name": "St Enodoc Golf Club (Holywell Course)", "difficulty": "easy", "lengthBand": "short", "holes": 18 },
+  { "name": "St Mellion Golf Club (Kernow Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "St Mellion Golf Club (Nicklaus Course)", "difficulty": "challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "East Devon Golf Club", "difficulty": "challenging", "lengthBand": "medium", "holes": 18 },
+  { "name": "Exminster Golf Centre", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "Royal North Devon Golf Club", "difficulty": "challenging", "lengthBand": "medium", "holes": 18 },
+  { "name": "Woodbury Park Hotel & Golf Club (The Oaks)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Tudor Park Country Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Bearsted Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Holtye Golf Club", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "Sweetwoods Park Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Baildon Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Bedale Golf Club", "difficulty": "easy", "lengthBand": "short", "holes": 18 },
+  { "name": "Leeds Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Oakdale Golf Club", "difficulty": "challenging", "lengthBand": "medium", "holes": 18 },
+  { "name": "Macdonald Portal Hotel, Golf & Spa (Championship Course)", "difficulty": "challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "Macdonald Hill Valley Hotel Golf & Country Club (Emerald Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Macdonald Portal Hotel, Golf & Spa (Premier Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Carden Park (The Cheshire Course)", "difficulty": "challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "Carden Park (The Nicklaus Course)", "difficulty": "challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "Macdonald Portal Hotel, Golf & Spa (Arderne Course)", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "The West Lancashire Golf Club", "difficulty": "challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "Cranleigh Golf & Country Club", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "Chelsfield Lakes Golf Centre (The Lakes)", "difficulty": "easy", "lengthBand": "short", "holes": 18 },
+  { "name": "Chingford Golf Course", "difficulty": "easy", "lengthBand": "short", "holes": 18 },
+  { "name": "Hampton Court Palace Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Bunsay Golf Club, at The Warren Estate", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "The Warren Golf Club, at The Warren Estate", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Blackburn Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Davyhulme Park Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Goswick Golf Links", "difficulty": "challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "Macdonald Linden Hall Golf & Country Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Whitley Bay Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "The Cotswolds Club, Chipping Norton", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Oxford Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Rye Hill Golf Club", "difficulty": "easy", "lengthBand": "medium", "holes": 18 },
+  { "name": "The Club at Mapledurham", "difficulty": "easy", "lengthBand": "short", "holes": 18 },
+  { "name": "The Springs Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Old Thorns", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Boundary Lakes Golf Course", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "Cams Hall Estate Golf Club (Creek Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Cams Hall Estate Golf Club (Park Course)", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "East Horton Golf Club (The Greenwood Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "East Horton Golf Club (The Parkland Course)", "difficulty": "easy", "lengthBand": "short", "holes": 18 },
+  { "name": "Sherfield Oaks Golf Club (Waterloo Course)", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Sherfield Oaks Golf Club (Wellington Course)", "difficulty": "easy", "lengthBand": "short", "holes": 9 },
+  { "name": "Wickham Park Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Scarborough South Cliff Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "York Golf Club", "difficulty": "challenging", "lengthBand": "medium", "holes": 18 },
+  { "name": "Doncaster Town Moor Golf Club", "difficulty": "moderate", "lengthBand": "medium", "holes": 18 },
+  { "name": "Ganton Golf Club", "difficulty": "very challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "Rudding Park Golf Club (Hawtree Championship Course)", "difficulty": "challenging", "lengthBand": "long", "holes": 18 },
+  { "name": "Royal Cinque Ports Golf Club", "difficulty": "very challenging", "lengthBand": "long", "holes": 18 },
+  {
+    "name": "Walton Heath Golf Club",
+    "difficulty": "demanding",
+    "lengthBand": "very_long",
+    "holes": 36
+  },
+  {
+    "name": "Coombe Hill Golf Club",
+    "difficulty": "demanding",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Addington Palace Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Purley Downs Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Shirley Park Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Malden Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Roehampton Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Mitcham Golf Club",
+    "difficulty": "easy",
+    "lengthBand": "short",
+    "holes": 18
+  },
+  {
+    "name": "Chipstead Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Coulsdon Court Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Moor Park Golf Club",
+    "difficulty": "challenging",
+    "lengthBand": "long",
+    "holes": 36
+  },
+  {
+    "name": "Hadley Wood Golf Club",
+    "difficulty": "challenging",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Sandy Lodge Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "West Herts Golf Club",
+    "difficulty": "challenging",
+    "lengthBand": "long",
+    "holes": 18
+  },
+  {
+    "name": "Porters Park Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "South Herts Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "The Shire London",
+    "difficulty": "challenging",
+    "lengthBand": "long",
+    "holes": 18
+  },
+  {
+    "name": "The Hertsmere Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "long",
+    "holes": 18
+  },
+  {
+    "name": "Hartsbourne Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 27
+  },
+  {
+    "name": "Ingrebourne Links Golf & Country Club",
+    "difficulty": "moderate",
+    "lengthBand": "long",
+    "holes": 27
+  },
+  {
+    "name": "Abridge Golf Club",
+    "difficulty": "challenging",
+    "lengthBand": "long",
+    "holes": 18
+  },
+  {
+    "name": "West Essex Golf Club",
+    "difficulty": "challenging",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Upminster Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Maylands Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Stapleford Abbotts Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "long",
+    "holes": 18
+  },
+  {
+    "name": "Cranham Golf Course",
+    "difficulty": "easy",
+    "lengthBand": "short",
+    "holes": 18
+  },
+  {
+    "name": "Ilford Golf Club",
+    "difficulty": "easy",
+    "lengthBand": "short",
+    "holes": 18
+  },
+  {
+    "name": "Bush Hill Park Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "short",
+    "holes": 18
+  },
+  {
+    "name": "Ashford Manor Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Crews Hill Golf Club",
+    "difficulty": "easy",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Dulwich & Sydenham Hill Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Chislehurst Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "short",
+    "holes": 18
+  },
+  {
+    "name": "Bexleyheath Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "short",
+    "holes": 9
+  },
+  {
+    "name": "Royal Blackheath Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Birchwood Park Golf & Country Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 36
+  },
+  {
+    "name": "Dartford Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "High Elms Golf Course",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Crowborough Beacon Golf Club",
+    "difficulty": "hard",
+    "lengthBand": "medium",
+    "holes": 18
+  },
+  {
+    "name": "Trethorne Golf Club",
+    "difficulty": "moderate",
+    "lengthBand": "medium",
+    "holes": 18
+  }
+]
+}
