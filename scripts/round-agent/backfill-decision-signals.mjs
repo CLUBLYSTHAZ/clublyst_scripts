@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import WebSocket from "ws";
 
 const SOURCE_VERSION = "round_agent_decision_signals_v1";
 const DEFAULT_CHUNK_SIZE = 250;
@@ -784,7 +785,10 @@ async function main() {
 
   const supabase = options.dryRun
     ? null
-    : createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    : createClient(supabaseUrl, serviceKey, {
+        auth: { persistSession: false },
+        realtime: { transport: WebSocket },
+      });
 
   const supabaseClubs = supabase ? await fetchSupabaseClubs(supabase) : [];
   const clubIdsByKey = new Map(
