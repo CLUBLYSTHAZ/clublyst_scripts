@@ -3,7 +3,7 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 
-const SOURCE_VERSION = "round_agent_decision_signals_v2";
+const SOURCE_VERSION = "round_agent_decision_signals_v3_beta";
 const DEFAULT_CHUNK_SIZE = 250;
 
 const CONFIDENCE = {
@@ -192,6 +192,16 @@ function providerScore(provider, hasUrl) {
   return 55;
 }
 
+function bookingEaseScore({ bookingUrl, bookingProvider, teeTimeMetrics }) {
+  if (!bookingUrl) return null;
+  let score = providerScore(bookingProvider, true);
+  if (["brs", "clubv1", "intelligentgolf", "golfmanager"].includes(bookingProvider)) score += 6;
+  if (["club_site", "unknown"].includes(bookingProvider)) score -= 8;
+  if (teeTimeMetrics?.hasData) score += 8;
+  if (teeTimeMetrics?.isFresh) score += 6;
+  return clamp(score);
+}
+
 function loadBookingUrls() {
   const rows = readJson("src/data/London Golf Memberships - Booking URLs.json", []);
   const map = new Map();
@@ -325,6 +335,13 @@ function freshnessFromUpdatedAt(updatedAt, freshDays, staleDays) {
   return "unknown";
 }
 
+function freshnessScore(updatedAt, freshDays = 7, staleDays = 14) {
+  const freshness = freshnessFromUpdatedAt(updatedAt, freshDays, staleDays);
+  if (freshness === "fresh") return 92;
+  if (freshness === "stale") return 28;
+  return updatedAt ? 58 : null;
+}
+
 function isFreshTimestamp(timestamp, maxHours = 28) {
   if (!timestamp) return false;
   const time = Date.parse(timestamp);
@@ -346,10 +363,28 @@ function wetWeatherScore(condition) {
   return clamp(score);
 }
 
+function weatherImpactScore({ condition, play }) {
+  const wetScore = wetWeatherScore(condition);
+  if (wetScore === null) return null;
+  let score = wetScore;
+  const freshness = freshnessScore(condition?.updated_at);
+  if (freshness !== null) score = score * 0.72 + freshness * 0.28;
+  if (play?.lengthBand === "long") score -= 4;
+  if (play?.difficulty === "hard") score -= 4;
+  return clamp(score);
+}
+
 function categorical(value, strongAt = 75, weakBelow = 45) {
   if (!Number.isFinite(value)) return "unknown";
   if (value >= strongAt) return "strong";
   if (value < weakBelow) return "weak";
+  return "medium";
+}
+
+function riskCategorical(value) {
+  if (!Number.isFinite(value)) return "unknown";
+  if (value >= 68) return "high";
+  if (value <= 38) return "low";
   return "medium";
 }
 
@@ -563,6 +598,42 @@ function valueScore({ price, condition, play, countyStats, top100London }) {
   return clamp(score);
 }
 
+function travelFrictionScore(club, originKey) {
+  const base = accessFitScore(club, originKey);
+  if (base === null) return null;
+  let score = base;
+  const county = String(club.county || "").toLowerCase().trim();
+  const isNorthOrEast = club.latitude !== null && club.longitude !== null && (club.latitude > 51.55 || club.longitude > 0.05);
+  const isSouthOrWest = club.latitude !== null && club.longitude !== null && (club.latitude < 51.52 || club.longitude < -0.1);
+
+  if (originKey === "south_west_london") {
+    if (["surrey", "berkshire", "hampshire", "west sussex"].includes(county)) score += 6;
+    if (isNorthOrEast) score -= 12;
+  }
+  if (originKey === "west_london" && ["berkshire", "surrey"].includes(county)) score += 5;
+  if (originKey === "east_london" && ["essex", "kent"].includes(county)) score += 5;
+  if (originKey === "north_london" && ["hertfordshire"].includes(county)) score += 5;
+  if (originKey === "east_london" && isSouthOrWest) score -= 8;
+
+  return clamp(score);
+}
+
+function roundDurationRiskScore({ play, teeTimeMetrics, condition }) {
+  if (!play) return null;
+  let risk = 45;
+  if (play.holes === 9) risk -= 20;
+  if (play.holes >= 18) risk += 8;
+  if (play.lengthBand === "long") risk += 16;
+  if (play.lengthBand === "short") risk -= 8;
+  if (play.difficulty === "hard") risk += 10;
+  if (play.difficulty === "easy") risk -= 6;
+  if (teeTimeMetrics?.weekendSlotsNext7Days >= 10 || teeTimeMetrics?.slotsNext7Days >= 28) risk -= 8;
+  if (teeTimeMetrics?.weekendSlotsNext7Days > 0 && teeTimeMetrics?.weekendSlotsNext7Days <= 3) risk += 8;
+  const wet = wetWeatherScore(condition);
+  if (wet !== null && wet < 45) risk += 8;
+  return clamp(risk);
+}
+
 function inferAccessCorridors(club) {
   const county = String(club.county || "").toLowerCase().trim();
   const base = ACCESS_CORRIDORS_BY_COUNTY[county] || [];
@@ -635,6 +706,24 @@ function deriveClubSignals({ clubId, club, bookingUrl, play, condition, price, c
     })
   );
 
+  const bookingEase = bookingEaseScore({ bookingUrl, bookingProvider, teeTimeMetrics });
+  if (bookingEase !== null) {
+    addSignal(
+      signals,
+      makeSignal(clubId, "booking_ease_score", categorical(bookingEase), {
+        signalScore: bookingEase,
+        confidence: bookingUrl ? CONFIDENCE.MEDIUM : CONFIDENCE.LOW,
+        evidence: {
+          booking_url_known: !!bookingUrl,
+          booking_provider: bookingProvider,
+          has_tee_time_data: !!teeTimeMetrics?.hasData,
+          tee_time_is_fresh: !!teeTimeMetrics?.isFresh,
+        },
+        sourceType: "booking",
+      })
+    );
+  }
+
   for (const corridor of accessCorridors) {
     addSignal(
       signals,
@@ -665,6 +754,26 @@ function deriveClubSignals({ clubId, club, bookingUrl, play, condition, price, c
         },
       })
     );
+
+    const travelScore = travelFrictionScore(club, originKey);
+    if (travelScore !== null) {
+      addSignal(
+        signals,
+        makeSignal(clubId, "travel_friction_fit", categorical(travelScore), {
+          signalContext: originKey,
+          signalScore: travelScore,
+          confidence: CONFIDENCE.MEDIUM,
+          evidence: {
+            origin: LONDON_ORIGINS[originKey].label,
+            county: club.county,
+            latitude: club.latitude,
+            longitude: club.longitude,
+            model: "london_corridor_route_friction_v1",
+            route_api_status: "not_required_for_beta_proxy",
+          },
+        })
+      );
+    }
   }
 
   const longScore = lengthScore(play);
@@ -737,6 +846,44 @@ function deriveClubSignals({ clubId, club, bookingUrl, play, condition, price, c
           drainage_bucket: condition?.drainage_bucket,
           estimated_drainage_bucket: condition?.estimated_drainage_bucket,
           updated_at: condition?.updated_at,
+        },
+        sourceType: "conditions",
+        sourceUpdatedAt: condition?.updated_at || null,
+      })
+    );
+  }
+
+  const conditionFreshness = freshnessScore(condition?.updated_at);
+  if (conditionFreshness !== null) {
+    addSignal(
+      signals,
+      makeSignal(clubId, "condition_freshness", categorical(conditionFreshness), {
+        signalScore: conditionFreshness,
+        confidence: condition?.updated_at ? CONFIDENCE.HIGH : CONFIDENCE.LOW,
+        evidence: {
+          updated_at: condition?.updated_at || null,
+          freshness: freshnessFromUpdatedAt(condition?.updated_at, 7, 14),
+        },
+        sourceType: "conditions",
+        sourceUpdatedAt: condition?.updated_at || null,
+      })
+    );
+  }
+
+  const weatherImpact = weatherImpactScore({ condition, play });
+  if (weatherImpact !== null) {
+    addSignal(
+      signals,
+      makeSignal(clubId, "weather_impact_fit", categorical(weatherImpact), {
+        signalScore: weatherImpact,
+        confidence: condition?.estimated_drainage_bucket ? CONFIDENCE.MEDIUM : CONFIDENCE.HIGH,
+        evidence: {
+          condition_label: condition?.condition_label,
+          condition_score_10: condition?.condition_score_10,
+          drainage_bucket: condition?.drainage_bucket,
+          estimated_drainage_bucket: condition?.estimated_drainage_bucket,
+          updated_at: condition?.updated_at,
+          weather_model: "conditions_drainage_weather_proxy_v1",
         },
         sourceType: "conditions",
         sourceUpdatedAt: condition?.updated_at || null,
@@ -850,6 +997,27 @@ function deriveClubSignals({ clubId, club, bookingUrl, play, condition, price, c
     );
   }
 
+  const durationRisk = roundDurationRiskScore({ play, teeTimeMetrics, condition });
+  if (durationRisk !== null) {
+    addSignal(
+      signals,
+      makeSignal(clubId, "round_duration_risk", riskCategorical(durationRisk), {
+        signalScore: durationRisk,
+        confidence: teeTimeMetrics?.hasData ? CONFIDENCE.MEDIUM : CONFIDENCE.LOW,
+        evidence: {
+          holes: play?.holes,
+          length_band: play?.lengthBand,
+          difficulty: play?.difficulty,
+          slots_next_7_days: teeTimeMetrics?.slotsNext7Days ?? null,
+          weekend_slots_next_7_days: teeTimeMetrics?.weekendSlotsNext7Days ?? null,
+          model: "course_setup_availability_duration_risk_v1",
+          score_meaning: "higher means higher risk of a slower round",
+        },
+        sourceType: "derived",
+      })
+    );
+  }
+
   return signals;
 }
 
@@ -873,11 +1041,15 @@ function deriveEnrichment(clubId, club, signals) {
   const full18 = globalByKey.get("full_18_fit");
   const beginner = globalByKey.get("beginner_friendly");
   const wet = globalByKey.get("wet_weather_fit");
+  const conditionFreshness = globalByKey.get("condition_freshness");
+  const weatherImpact = globalByKey.get("weather_impact_fit");
   const value = globalByKey.get("value_fit");
+  const bookingEase = globalByKey.get("booking_ease_score");
   const availability = globalByKey.get("availability_confidence");
   const weekendAvailability = globalByKey.get("weekend_availability_fit");
   const fourball = globalByKey.get("fourball_fit");
   const pace = globalByKey.get("pace_of_play_proxy");
+  const durationRisk = globalByKey.get("round_duration_risk");
 
   if (long?.signal_value === "strong") {
     roundFitTags.push("long_course");
@@ -893,9 +1065,18 @@ function deriveEnrichment(clubId, club, signals) {
     roundFitTags.push("wet_weather_option");
     strengths.push("wet_weather_fit");
   }
+  if (conditionFreshness?.signal_value === "strong") strengths.push("fresh_conditions");
+  if (weatherImpact?.signal_value === "strong") {
+    roundFitTags.push("weather_resilient");
+    strengths.push("weather_impact_fit");
+  }
   if (value?.signal_value === "strong") {
     roundFitTags.push("value_round");
     strengths.push("strong_value");
+  }
+  if (bookingEase?.signal_value === "strong") {
+    roundFitTags.push("easy_booking");
+    strengths.push("booking_ease");
   }
   if (availability?.signal_value === "strong") {
     roundFitTags.push("good_availability");
@@ -913,6 +1094,11 @@ function deriveEnrichment(clubId, club, signals) {
     roundFitTags.push("availability_depth");
     strengths.push("pace_proxy_positive");
   }
+  if (durationRisk?.signal_value === "low") {
+    roundFitTags.push("lower_duration_risk");
+    strengths.push("round_duration_risk_low");
+  }
+  if (durationRisk?.signal_value === "high") tradeoffs.push("round_duration_risk_high");
 
   const swAccess = byKey.get("access_fit:south_west_london");
   if (swAccess?.signal_value === "strong") strengths.push("south_west_london_access");
@@ -922,7 +1108,9 @@ function deriveEnrichment(clubId, club, signals) {
     tradeoffs.push("booking_route_less_clear");
   }
   if (wet?.confidence === CONFIDENCE.LOW) tradeoffs.push("conditions_signal_low_confidence");
+  if (conditionFreshness?.signal_value === "weak") tradeoffs.push("conditions_stale");
   if (value?.confidence === CONFIDENCE.LOW) tradeoffs.push("value_signal_low_confidence");
+  if (bookingEase?.signal_value === "weak") tradeoffs.push("booking_ease_less_clear");
   if (!availability) tradeoffs.push("tee_time_availability_missing");
   if (pace?.confidence === CONFIDENCE.LOW) tradeoffs.push("pace_signal_low_confidence");
 
