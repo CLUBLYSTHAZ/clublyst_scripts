@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "round-agent:backfill-signals": "node scripts/round-agent/backfill-decision-signals.mjs"
+    "round-agent:backfill-signals": "node scripts/round-agent/backfill-decision-signals.mjs",
+    "round-agent:ranking-harness": "node scripts/round-agent/ranking-harness.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.56.0",
