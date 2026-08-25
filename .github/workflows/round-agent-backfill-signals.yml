@@ -1,0 +1,52 @@
+name: Round Agent Decision Signal Backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Generate summary without writing to Supabase (true/false)"
+        required: false
+        default: "false"
+      club_name:
+        description: "Optional single club name to backfill"
+        required: false
+        default: ""
+      chunk_size:
+        description: "Supabase upsert chunk size"
+        required: false
+        default: "250"
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Backfill Round Agent decision signals
+        run: |
+          ARGS=("--chunk-size" "${{ github.event.inputs.chunk_size }}")
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS+=("--dry-run")
+          fi
+          if [ -n "${{ github.event.inputs.club_name }}" ]; then
+            ARGS+=("--club" "${{ github.event.inputs.club_name }}")
+          fi
+          npm run round-agent:backfill-signals -- "${ARGS[@]}"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Upload summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: round-agent-decision-signals-summary
+          path: round-agent-decision-signals-summary.json
+          if-no-files-found: ignore
