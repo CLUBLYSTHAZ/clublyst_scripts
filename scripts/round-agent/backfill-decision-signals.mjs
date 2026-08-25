@@ -373,11 +373,35 @@ function parseTeeTimeMs(row) {
   );
 }
 
-function buildTeeTimeMetrics(rows) {
-  const futureRows = (rows || []).filter((row) => {
-    const teeTime = parseTeeTimeMs(row);
-    return Number.isFinite(teeTime) && teeTime >= Date.now();
+function localDateDiffDays(localDate) {
+  const dateText = String(localDate || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText)) return null;
+  const todayIso = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Europe/London",
   });
+  const start = Date.parse(`${todayIso}T00:00:00Z`);
+  const target = Date.parse(`${dateText}T00:00:00Z`);
+  if (!Number.isFinite(start) || !Number.isFinite(target)) return null;
+  return Math.round((target - start) / (24 * 60 * 60 * 1000));
+}
+
+function isWithinNextDays(row, days) {
+  const teeTime = parseTeeTimeMs(row);
+  if (Number.isFinite(teeTime)) {
+    return teeTime <= Date.now() + days * 24 * 60 * 60 * 1000;
+  }
+  const diff = localDateDiffDays(row?.local_date || row?.date);
+  return Number.isFinite(diff) && diff >= 0 && diff < days;
+}
+
+function buildTeeTimeMetrics(rows, options = {}) {
+  const sourceRows = rows || [];
+  const futureRows = options.assumeFutureRows
+    ? sourceRows
+    : sourceRows.filter((row) => {
+        const teeTime = parseTeeTimeMs(row);
+        return Number.isFinite(teeTime) && teeTime >= Date.now();
+      });
   if (!futureRows.length) return null;
 
   const maxScrapedAt = futureRows
@@ -387,10 +411,8 @@ function buildTeeTimeMetrics(rows) {
   const lastScrapedAt = Number.isFinite(maxScrapedAt) ? new Date(maxScrapedAt).toISOString() : null;
   const freshRows = futureRows.filter((row) => isFreshTimestamp(row?.scraped_at));
   const rowsForSignals = freshRows.length ? freshRows : futureRows;
-  const now = Date.now();
-  const dayMs = 24 * 60 * 60 * 1000;
-  const next3 = rowsForSignals.filter((row) => parseTeeTimeMs(row) <= now + 3 * dayMs);
-  const next7 = rowsForSignals.filter((row) => parseTeeTimeMs(row) <= now + 7 * dayMs);
+  const next3 = rowsForSignals.filter((row) => isWithinNextDays(row, 3));
+  const next7 = rowsForSignals.filter((row) => isWithinNextDays(row, 7));
   const weekendRows = next7.filter((row) => Number(row?.local_dow) === 0 || Number(row?.local_dow) === 6);
   const knownSpotRows = next7.filter((row) => Number.isFinite(Number(row?.spots_available)));
   const fourballRows = knownSpotRows.filter((row) => Number(row?.spots_available) >= 4);
@@ -1016,6 +1038,7 @@ async function fetchTeeTimeMetricsByClub(supabase, supabaseClubs) {
     matched_raw_rows: 0,
     clubs_with_metrics: 0,
     fallback_used: false,
+    sample_rows: [],
   };
 
   let rows = await fetchAllRows(
@@ -1025,6 +1048,14 @@ async function fetchTeeTimeMetricsByClub(supabase, supabaseClubs) {
   );
 
   diagnostics.resolved_rows = rows.length;
+  diagnostics.sample_rows = rows.slice(0, 3).map((row) => ({
+    club_id: row?.club_id || null,
+    tee_time_at: row?.tee_time_at || null,
+    local_date: row?.local_date || null,
+    local_time: row?.local_time || null,
+    local_dow: row?.local_dow ?? null,
+    scraped_at: row?.scraped_at || null,
+  }));
 
   if (!rows.length) {
     diagnostics.source = "tee_times";
@@ -1058,7 +1089,7 @@ async function fetchTeeTimeMetricsByClub(supabase, supabaseClubs) {
   const metricsByClub = new Map(
     Array.from(rowsByClubId.entries()).map(([clubId, clubRows]) => [
       clubId,
-      buildTeeTimeMetrics(clubRows),
+      buildTeeTimeMetrics(clubRows, { assumeFutureRows: diagnostics.source === "clublyst_tee_times_resolved" }),
     ])
   );
   diagnostics.clubs_with_metrics = metricsByClub.size;
