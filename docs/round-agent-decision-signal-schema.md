@@ -36,6 +36,11 @@ access_fit
 fourball_fit
 pace_of_play_proxy
 weekend_capacity_proxy
+booking_ease_score
+travel_friction_fit
+weather_impact_fit
+condition_freshness
+round_duration_risk
 value_fit
 ```
 
@@ -170,6 +175,7 @@ wet_weather_fit
 good_drainage
 winter_playability
 condition_freshness
+weather_impact_fit
 ```
 
 Example:
@@ -215,6 +221,64 @@ Example:
     "length_band": "medium"
   }
 }
+```
+
+## Booking And Travel Signals
+
+```text
+booking_ease_score
+travel_friction_fit
+```
+
+`booking_ease_score` captures how easy the user journey is likely to be, using booking provider, direct booking URL, tee-time data presence and freshness.
+
+`travel_friction_fit` is context-specific by origin, for example `south_west_london`. For beta it uses coordinates, county/corridor fit and cross-London penalties. If route API drive-time data is added later, the same signal can carry `drive_time_minutes`, `route_distance_km` and route confidence in `evidence`.
+
+## Round Duration Signals
+
+```text
+round_duration_risk
+```
+
+This is a risk signal, so higher `signal_score` means a higher chance of a slower round. The agent should phrase this as a proxy based on course setup, holes, length, difficulty, weather/condition context and tee-time depth. It must not claim an exact round time.
+
+---
+
+# 3.1 Browse Beta Signal Set
+
+The Browse-page beta should consume this initial set:
+
+```text
+access_fit
+travel_friction_fit
+long_course_fit
+full_18_fit
+beginner_friendly
+difficulty_fit
+wet_weather_fit
+weather_impact_fit
+condition_freshness
+value_fit
+booking_route_confidence
+booking_ease_score
+availability_confidence
+weekend_availability_fit
+fourball_fit
+pace_of_play_proxy
+round_duration_risk
+```
+
+This gives the UI enough data for:
+
+```text
+Best pick
+Why this fits
+Watch out
+Data confidence
+Availability/booking caveat
+Travel fit from inferred origin
+Conditions/weather suitability
+Round duration risk
 ```
 
 ---
@@ -322,3 +386,4 @@ weekend_capacity_proxy
 pace_of_play_proxy
 worth_the_drive
 quality_relative_to_price
+```
