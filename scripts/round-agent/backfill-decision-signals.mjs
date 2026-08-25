@@ -353,9 +353,29 @@ function categorical(value, strongAt = 75, weakBelow = 45) {
   return "medium";
 }
 
+function parseTeeTimeMs(row) {
+  const direct = Date.parse(row?.tee_time_at);
+  if (Number.isFinite(direct)) return direct;
+
+  const localDate = String(row?.local_date || row?.date || "").trim();
+  const localTime = String(row?.local_time || row?.tee_time || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate)) return null;
+  const timeMatch = localTime.match(/^([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?\s*(am|pm)?$/i);
+  if (!timeMatch) return null;
+
+  let hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+  const meridiem = String(timeMatch[3] || "").toLowerCase();
+  if (meridiem === "pm" && hour < 12) hour += 12;
+  if (meridiem === "am" && hour === 12) hour = 0;
+  return Date.parse(
+    `${localDate}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00+01:00`
+  );
+}
+
 function buildTeeTimeMetrics(rows) {
   const futureRows = (rows || []).filter((row) => {
-    const teeTime = Date.parse(row?.tee_time_at);
+    const teeTime = parseTeeTimeMs(row);
     return Number.isFinite(teeTime) && teeTime >= Date.now();
   });
   if (!futureRows.length) return null;
@@ -369,8 +389,8 @@ function buildTeeTimeMetrics(rows) {
   const rowsForSignals = freshRows.length ? freshRows : futureRows;
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
-  const next3 = rowsForSignals.filter((row) => Date.parse(row?.tee_time_at) <= now + 3 * dayMs);
-  const next7 = rowsForSignals.filter((row) => Date.parse(row?.tee_time_at) <= now + 7 * dayMs);
+  const next3 = rowsForSignals.filter((row) => parseTeeTimeMs(row) <= now + 3 * dayMs);
+  const next7 = rowsForSignals.filter((row) => parseTeeTimeMs(row) <= now + 7 * dayMs);
   const weekendRows = next7.filter((row) => Number(row?.local_dow) === 0 || Number(row?.local_dow) === 6);
   const knownSpotRows = next7.filter((row) => Number.isFinite(Number(row?.spots_available)));
   const fourballRows = knownSpotRows.filter((row) => Number(row?.spots_available) >= 4);
@@ -1042,6 +1062,7 @@ async function fetchTeeTimeMetricsByClub(supabase, supabaseClubs) {
     ])
   );
   diagnostics.clubs_with_metrics = metricsByClub.size;
+  diagnostics.clubs_with_usable_metrics = Array.from(metricsByClub.values()).filter(Boolean).length;
   return { metricsByClub, diagnostics };
 }
 
@@ -1110,6 +1131,7 @@ async function main() {
   const qualityRows = [];
   const unmatched = [];
   const processed = [];
+  let processedClubsWithTeeTimeMetrics = 0;
 
   for (const [key, club] of clubsByKey.entries()) {
     if (options.clubName && normalizeClubKey(options.clubName) !== key) continue;
@@ -1127,6 +1149,7 @@ async function main() {
     const county = String(club.county || "").toLowerCase().trim();
     const countyStats = countyPriceStats.get(county) || null;
     const teeTimeMetrics = teeTimeMetricsByClubId.get(clubId) || null;
+    if (teeTimeMetrics) processedClubsWithTeeTimeMetrics += 1;
     const signals = deriveClubSignals({
       clubId,
       club,
@@ -1170,7 +1193,10 @@ async function main() {
     data_quality_rows: qualityRows.length,
     signal_counts: countBy(allSignals, "signal_key"),
     confidence_counts: countBy(allSignals, "confidence"),
-    tee_time_diagnostics: teeTimeResult.diagnostics,
+    tee_time_diagnostics: {
+      ...teeTimeResult.diagnostics,
+      processed_clubs_with_tee_time_metrics: processedClubsWithTeeTimeMetrics,
+    },
     unmatched: unmatched.slice(0, 50),
     generated_at: new Date().toISOString(),
   };
