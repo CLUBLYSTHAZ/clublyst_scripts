@@ -116,6 +116,10 @@ function normalizeText(value) {
   return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+function hasAny(text, patterns) {
+  return patterns.some((pattern) => pattern.test(text));
+}
+
 function clamp(value, min = 0, max = 100) {
   if (!Number.isFinite(value)) return min;
   return Math.max(min, Math.min(max, value));
@@ -160,11 +164,30 @@ function intentFromPrompt(prompt, context = {}) {
     wants_longer_course: /\blong(?:er)?\b|\bproper\s+18\b|\bfull\s+18\b/.test(text),
     wants_full_18: /\b18\b|\bfull\b|\blong(?:er)?\b/.test(text),
     wants_easy: /\beasy\b|\bnewer\b|\bbeginner\b|\bnot too hard\b|\bforgiving\b/.test(text),
-    wants_wet_weather: /\brain\b|\bwet\b|\bdrain\b|\bwinter\b/.test(text),
+    wants_wet_weather: hasAny(text, [
+      /\brain(?:s|y|ing)?\b/,
+      /\bwet\b/,
+      /\bdrain(?:s|age|ing)?\b/,
+      /\bwinter\b/,
+    ]),
     wants_value: /\bvalue\b|\bcheap\b|\bnot too expensive\b|\bunder\b|\bbudget\b/.test(text),
-    wants_weekend: /\bweekend\b|\bsaturday\b|\bsunday\b/.test(text),
-    wants_low_crowding: /\bnot busy\b|\bquiet\b|\bnot crowded\b|\bget on\b/.test(text),
-    wants_pace: /\bdoesn'?t take forever\b|\bquick\b|\bpace\b|\bfast\b|\bnot slow\b/.test(text),
+    wants_weekend: /\bweekends?\b|\bsaturday\b|\bsunday\b/.test(text),
+    wants_low_crowding: hasAny(text, [
+      /\bnot\s+(?:a\s+)?busy\b/,
+      /\bless busy\b/,
+      /\bquiet\b/,
+      /\bnot crowded\b/,
+      /\bget on\b/,
+      /\bimpossible to get on\b/,
+    ]),
+    wants_pace: hasAny(text, [
+      /\b(?:don'?t|doesn'?t|do not|does not|not)\s+take\s+forever\b/,
+      /\brounds?\s+(?:don'?t|do not)\s+take\s+forever\b/,
+      /\bquick\b/,
+      /\bpace\b/,
+      /\bfast\b/,
+      /\bnot slow\b/,
+    ]),
   };
 }
 
@@ -257,6 +280,9 @@ function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
   if (intent.wants_weekend || intent.wants_low_crowding) {
     tradeoffCodes.push("weekend_capacity_not_confirmed");
   }
+  if (intent.wants_low_crowding) {
+    tradeoffCodes.push("crowding_not_confirmed");
+  }
   if (intent.wants_pace) {
     tradeoffCodes.push("pace_not_confirmed");
   }
@@ -268,11 +294,18 @@ function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
   }
 
   const match = clamp(Math.round(score));
+  const proxyOnlyTradeoffs = new Set([
+    "crowding_not_confirmed",
+    "fourball_fit_proxy_only",
+    "pace_not_confirmed",
+    "weekend_capacity_not_confirmed",
+  ]);
+  const hasRequestedProxyGap = tradeoffCodes.some((code) => proxyOnlyTradeoffs.has(code));
   const recommendationConfidence =
-    quality?.overall_data_confidence === "high" && tradeoffCodes.length <= 2
-      ? "high"
-      : quality?.overall_data_confidence === "low"
-        ? "low"
+    quality?.overall_data_confidence === "low"
+      ? "low"
+      : quality?.overall_data_confidence === "high" && tradeoffCodes.length <= 2 && !hasRequestedProxyGap
+        ? "high"
         : "medium";
 
   return {
