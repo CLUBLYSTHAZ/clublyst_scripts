@@ -3,5 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "dependencies": {}
+  "scripts": {
+    "round-agent:backfill-signals": "node scripts/round-agent/backfill-decision-signals.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.56.0"
+  }
 }
