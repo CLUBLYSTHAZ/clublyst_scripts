@@ -143,6 +143,18 @@ function signalScore(signal, fallback = 50) {
   return fallback;
 }
 
+function inverseRiskScore(signal, fallback = 55) {
+  if (!signal) return fallback;
+  if (signal?.confidence === "low") return fallback;
+  const risk = Number(signal?.signal_score);
+  if (Number.isFinite(risk)) return clamp(100 - risk);
+  const value = String(signal?.signal_value || "").toLowerCase();
+  if (value === "low") return 82;
+  if (value === "medium") return 58;
+  if (value === "high") return 28;
+  return fallback;
+}
+
 function intentFromPrompt(prompt, context = {}) {
   const text = normalizeText(prompt);
   const budgetMatch = text.match(/(?:under|below|max|maximum|less than)\s*£?\s*(\d{2,3})/i);
@@ -195,16 +207,21 @@ function intentFromPrompt(prompt, context = {}) {
 function buildWeights(intent) {
   const weights = {
     access: intent.location_query || intent.origin_context ? 0.22 : 0.08,
+    travel: intent.location_query || intent.origin_context ? 0.18 : 0.05,
     length: intent.wants_longer_course ? 0.2 : 0.06,
     full18: intent.wants_full_18 ? 0.08 : 0.04,
     beginner: intent.wants_easy ? 0.16 : 0.04,
-    wet: intent.wants_wet_weather ? 0.18 : 0.04,
+    wet: intent.wants_wet_weather ? 0.14 : 0.04,
+    weather: intent.wants_wet_weather ? 0.12 : 0.04,
+    conditions: intent.wants_wet_weather ? 0.08 : 0.04,
     value: intent.wants_value || intent.budget_max ? 0.16 : 0.08,
     availability: intent.wants_weekend || intent.wants_low_crowding || intent.wants_pace ? 0.16 : 0.05,
     weekend: intent.wants_weekend || intent.wants_low_crowding ? 0.14 : 0.03,
     fourball: intent.players && intent.players >= 4 ? 0.12 : 0.03,
     pace: intent.wants_pace || intent.wants_low_crowding ? 0.1 : 0.03,
+    duration: intent.wants_pace || intent.wants_low_crowding ? 0.12 : 0.04,
     booking: 0.04,
+    bookingEase: 0.06,
     confidence: 0.08,
   };
 
@@ -243,29 +260,39 @@ function getSignal(signalMap, key, context = "global") {
 function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
   const originContext = intent.origin_context || "global";
   const accessSignal = getSignal(signals, "access_fit", originContext);
+  const travelSignal = getSignal(signals, "travel_friction_fit", originContext);
   const longSignal = getSignal(signals, "long_course_fit");
   const full18Signal = getSignal(signals, "full_18_fit");
   const beginnerSignal = getSignal(signals, "beginner_friendly");
   const wetSignal = getSignal(signals, "wet_weather_fit");
+  const weatherSignal = getSignal(signals, "weather_impact_fit");
+  const conditionFreshnessSignal = getSignal(signals, "condition_freshness");
   const valueSignal = getSignal(signals, "value_fit");
   const bookingSignal = getSignal(signals, "booking_route_confidence");
+  const bookingEaseSignal = getSignal(signals, "booking_ease_score");
   const availabilitySignal = getSignal(signals, "availability_confidence");
   const weekendSignal = getSignal(signals, "weekend_availability_fit");
   const fourballSignal = getSignal(signals, "fourball_fit");
   const paceSignal = getSignal(signals, "pace_of_play_proxy");
+  const durationSignal = getSignal(signals, "round_duration_risk");
 
   const components = {
     access: signalScore(accessSignal, 50),
+    travel: signalScore(travelSignal, 50),
     length: signalScore(longSignal, 50),
     full18: signalScore(full18Signal, 50),
     beginner: signalScore(beginnerSignal, 50),
     wet: signalScore(wetSignal, 50),
+    weather: signalScore(weatherSignal, 50),
+    conditions: signalScore(conditionFreshnessSignal, 50),
     value: signalScore(valueSignal, 50),
     availability: signalScore(availabilitySignal, 35),
     weekend: signalScore(weekendSignal, 35),
     fourball: signalScore(fourballSignal, 45),
     pace: signalScore(paceSignal, 45),
+    duration: inverseRiskScore(durationSignal, 55),
     booking: signalScore(bookingSignal, 60),
+    bookingEase: signalScore(bookingEaseSignal, 60),
     confidence: confidenceScore(quality?.overall_data_confidence || enrichment?.data_confidence),
   };
 
@@ -279,15 +306,25 @@ function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
   if (intent.origin_context && accessSignal?.signal_value === "strong") {
     reasonCodes.push(`good_${intent.origin_context}_access`);
   }
+  if (intent.origin_context && travelSignal?.signal_value === "strong") {
+    reasonCodes.push("low_travel_friction");
+  }
   if (intent.origin_context && accessSignal?.signal_value === "weak") {
     tradeoffCodes.push(`weaker_${intent.origin_context}_access`);
     score -= 10;
+  }
+  if (intent.origin_context && travelSignal?.signal_value === "weak") {
+    tradeoffCodes.push("higher_travel_friction");
+    score -= 6;
   }
   if (intent.wants_longer_course && longSignal?.signal_value === "strong") reasonCodes.push("long_course_fit");
   if (intent.wants_full_18 && full18Signal?.signal_value === "strong") reasonCodes.push("full_18_fit");
   if (intent.wants_easy && beginnerSignal?.signal_value === "strong") reasonCodes.push("beginner_friendly");
   if (intent.wants_wet_weather && wetSignal?.signal_value === "strong") reasonCodes.push("wet_weather_fit");
+  if (intent.wants_wet_weather && weatherSignal?.signal_value === "strong") reasonCodes.push("weather_impact_fit");
+  if (conditionFreshnessSignal?.signal_value === "weak") tradeoffCodes.push("conditions_stale");
   if (intent.wants_value && valueSignal?.signal_value === "strong") reasonCodes.push("strong_value");
+  if (bookingEaseSignal?.signal_value === "strong") reasonCodes.push("easy_booking");
   if (availabilitySignal?.signal_value === "strong" && availabilitySignal?.confidence !== "low") reasonCodes.push("fresh_availability");
   if (
     (intent.wants_weekend || intent.wants_low_crowding) &&
@@ -305,6 +342,12 @@ function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
     paceSignal?.confidence !== "low"
   ) {
     reasonCodes.push("pace_proxy_positive");
+  }
+  if ((intent.wants_pace || intent.wants_low_crowding) && durationSignal?.signal_value === "low" && durationSignal?.confidence !== "low") {
+    reasonCodes.push("lower_round_duration_risk");
+  }
+  if ((intent.wants_pace || intent.wants_low_crowding) && durationSignal?.signal_value === "high" && durationSignal?.confidence !== "low") {
+    tradeoffCodes.push("higher_round_duration_risk");
   }
   if (bookingSignal?.signal_value !== "weak") reasonCodes.push("booking_route_available");
 
@@ -381,13 +424,18 @@ function scoreClub({ club, signals, enrichment, quality, intent, weights }) {
     decision_metadata: {
       access_context: intent.origin_context,
       access_score: components.access,
+      travel_score: components.travel,
       length_score: components.length,
       value_score: components.value,
       wet_weather_score: components.wet,
+      weather_impact_score: components.weather,
+      condition_freshness_score: components.conditions,
       availability_score: components.availability,
       weekend_score: components.weekend,
       fourball_score: components.fourball,
       pace_score: components.pace,
+      duration_fit_score: components.duration,
+      booking_ease_score: components.bookingEase,
       confidence_score: components.confidence,
     },
   };
