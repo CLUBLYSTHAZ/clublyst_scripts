@@ -3,7 +3,7 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 
-const SOURCE_VERSION = "round_agent_decision_signals_v1";
+const SOURCE_VERSION = "round_agent_decision_signals_v2";
 const DEFAULT_CHUNK_SIZE = 250;
 
 const CONFIDENCE = {
@@ -325,6 +325,13 @@ function freshnessFromUpdatedAt(updatedAt, freshDays, staleDays) {
   return "unknown";
 }
 
+function isFreshTimestamp(timestamp, maxHours = 28) {
+  if (!timestamp) return false;
+  const time = Date.parse(timestamp);
+  if (!Number.isFinite(time)) return false;
+  return Date.now() - time <= maxHours * 60 * 60 * 1000;
+}
+
 function wetWeatherScore(condition) {
   if (!condition) return null;
   const drainage = String(condition.drainage_bucket || condition.estimated_drainage_bucket || "").toUpperCase();
@@ -344,6 +351,85 @@ function categorical(value, strongAt = 75, weakBelow = 45) {
   if (value >= strongAt) return "strong";
   if (value < weakBelow) return "weak";
   return "medium";
+}
+
+function buildTeeTimeMetrics(rows) {
+  const futureRows = (rows || []).filter((row) => {
+    const teeTime = Date.parse(row?.tee_time_at);
+    return Number.isFinite(teeTime) && teeTime >= Date.now();
+  });
+  if (!futureRows.length) return null;
+
+  const maxScrapedAt = futureRows
+    .map((row) => Date.parse(row?.scraped_at))
+    .filter(Number.isFinite)
+    .sort((a, b) => b - a)[0];
+  const lastScrapedAt = Number.isFinite(maxScrapedAt) ? new Date(maxScrapedAt).toISOString() : null;
+  const freshRows = futureRows.filter((row) => isFreshTimestamp(row?.scraped_at));
+  const rowsForSignals = freshRows.length ? freshRows : futureRows;
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const next3 = rowsForSignals.filter((row) => Date.parse(row?.tee_time_at) <= now + 3 * dayMs);
+  const next7 = rowsForSignals.filter((row) => Date.parse(row?.tee_time_at) <= now + 7 * dayMs);
+  const weekendRows = next7.filter((row) => Number(row?.local_dow) === 0 || Number(row?.local_dow) === 6);
+  const knownSpotRows = next7.filter((row) => Number.isFinite(Number(row?.spots_available)));
+  const fourballRows = knownSpotRows.filter((row) => Number(row?.spots_available) >= 4);
+  const weekendFourballRows = fourballRows.filter((row) => Number(row?.local_dow) === 0 || Number(row?.local_dow) === 6);
+  const uniqueWeekendDays = new Set(weekendRows.map((row) => String(row?.local_date || "")));
+
+  return {
+    hasData: rowsForSignals.length > 0,
+    isFresh: freshRows.length > 0,
+    lastScrapedAt,
+    slotsNext3Days: next3.length,
+    slotsNext7Days: next7.length,
+    weekendSlotsNext7Days: weekendRows.length,
+    weekendDaysWithSlots: Array.from(uniqueWeekendDays).filter(Boolean).length,
+    knownSpotRows: knownSpotRows.length,
+    fourballSlotsNext7Days: fourballRows.length,
+    weekendFourballSlotsNext7Days: weekendFourballRows.length,
+    hasMorningSlots: next7.some((row) => String(row?.local_time || "") >= "06:00" && String(row?.local_time || "") < "12:00"),
+    hasAfternoonSlots: next7.some((row) => String(row?.local_time || "") >= "12:00" && String(row?.local_time || "") <= "17:30"),
+    hasEveningSlots: next7.some((row) => String(row?.local_time || "") > "17:30"),
+  };
+}
+
+function availabilityScore(metrics) {
+  if (!metrics?.hasData) return null;
+  if (!metrics.isFresh) return 30;
+  return clamp(42 + Math.min(36, metrics.slotsNext3Days * 3) + Math.min(12, metrics.slotsNext7Days));
+}
+
+function weekendAvailabilityScore(metrics) {
+  if (!metrics?.hasData) return null;
+  if (!metrics.isFresh) return 28;
+  if (!metrics.weekendSlotsNext7Days) return 25;
+  return clamp(45 + Math.min(35, metrics.weekendSlotsNext7Days * 4) + Math.min(15, metrics.weekendDaysWithSlots * 7.5));
+}
+
+function fourballScore(metrics) {
+  if (!metrics?.hasData) return null;
+  if (!metrics.isFresh) return 28;
+  if (metrics.knownSpotRows > 0) {
+    if (metrics.fourballSlotsNext7Days > 0) {
+      return clamp(58 + Math.min(32, metrics.fourballSlotsNext7Days * 8));
+    }
+    return 30;
+  }
+  if (metrics.weekendSlotsNext7Days >= 8 || metrics.slotsNext7Days >= 18) return 62;
+  if (metrics.weekendSlotsNext7Days > 0 || metrics.slotsNext7Days >= 8) return 52;
+  return 35;
+}
+
+function paceProxyScore(metrics) {
+  if (!metrics?.hasData) return null;
+  if (!metrics.isFresh) return 30;
+  const weekendDepth = metrics.weekendSlotsNext7Days;
+  const totalDepth = metrics.slotsNext7Days;
+  if (weekendDepth >= 10 || totalDepth >= 28) return 78;
+  if (weekendDepth >= 4 || totalDepth >= 14) return 64;
+  if (weekendDepth > 0 || totalDepth >= 6) return 50;
+  return 35;
 }
 
 function lengthScore(play) {
@@ -459,7 +545,7 @@ function addSignal(signals, signal) {
   signals.push(signal);
 }
 
-function deriveClubSignals({ clubId, club, bookingUrl, play, condition, price, countyStats }) {
+function deriveClubSignals({ clubId, club, bookingUrl, play, condition, price, countyStats, teeTimeMetrics }) {
   const signals = [];
   const bookingProvider = inferBookingProvider(bookingUrl);
   const bookingScore = providerScore(bookingProvider, !!bookingUrl);
@@ -606,6 +692,90 @@ function deriveClubSignals({ clubId, club, bookingUrl, play, condition, price, c
     );
   }
 
+  const availability = availabilityScore(teeTimeMetrics);
+  if (availability !== null) {
+    addSignal(
+      signals,
+      makeSignal(clubId, "availability_confidence", categorical(availability), {
+        signalScore: availability,
+        confidence: teeTimeMetrics?.isFresh ? CONFIDENCE.HIGH : CONFIDENCE.LOW,
+        evidence: {
+          slots_next_3_days: teeTimeMetrics?.slotsNext3Days,
+          slots_next_7_days: teeTimeMetrics?.slotsNext7Days,
+          last_scraped_at: teeTimeMetrics?.lastScrapedAt,
+          freshness_window_hours: 28,
+        },
+        sourceType: "tee_times",
+        sourceUpdatedAt: teeTimeMetrics?.lastScrapedAt || null,
+      })
+    );
+  }
+
+  const weekendAvailability = weekendAvailabilityScore(teeTimeMetrics);
+  if (weekendAvailability !== null) {
+    addSignal(
+      signals,
+      makeSignal(clubId, "weekend_availability_fit", categorical(weekendAvailability), {
+        signalScore: weekendAvailability,
+        confidence: teeTimeMetrics?.isFresh ? CONFIDENCE.HIGH : CONFIDENCE.LOW,
+        evidence: {
+          weekend_slots_next_7_days: teeTimeMetrics?.weekendSlotsNext7Days,
+          weekend_days_with_slots: teeTimeMetrics?.weekendDaysWithSlots,
+          last_scraped_at: teeTimeMetrics?.lastScrapedAt,
+          freshness_window_hours: 28,
+        },
+        sourceType: "tee_times",
+        sourceUpdatedAt: teeTimeMetrics?.lastScrapedAt || null,
+      })
+    );
+  }
+
+  const fourball = fourballScore(teeTimeMetrics);
+  if (fourball !== null) {
+    addSignal(
+      signals,
+      makeSignal(clubId, "fourball_fit", categorical(fourball), {
+        signalScore: fourball,
+        confidence:
+          teeTimeMetrics?.isFresh && teeTimeMetrics?.knownSpotRows > 0
+            ? CONFIDENCE.HIGH
+            : teeTimeMetrics?.isFresh
+              ? CONFIDENCE.MEDIUM
+              : CONFIDENCE.LOW,
+        evidence: {
+          known_spot_rows: teeTimeMetrics?.knownSpotRows,
+          fourball_slots_next_7_days: teeTimeMetrics?.fourballSlotsNext7Days,
+          weekend_fourball_slots_next_7_days: teeTimeMetrics?.weekendFourballSlotsNext7Days,
+          slots_next_7_days: teeTimeMetrics?.slotsNext7Days,
+          last_scraped_at: teeTimeMetrics?.lastScrapedAt,
+          proxy_used: !teeTimeMetrics?.knownSpotRows,
+        },
+        sourceType: "tee_times",
+        sourceUpdatedAt: teeTimeMetrics?.lastScrapedAt || null,
+      })
+    );
+  }
+
+  const pace = paceProxyScore(teeTimeMetrics);
+  if (pace !== null) {
+    addSignal(
+      signals,
+      makeSignal(clubId, "pace_of_play_proxy", categorical(pace), {
+        signalScore: pace,
+        confidence: teeTimeMetrics?.isFresh ? CONFIDENCE.MEDIUM : CONFIDENCE.LOW,
+        evidence: {
+          slots_next_7_days: teeTimeMetrics?.slotsNext7Days,
+          weekend_slots_next_7_days: teeTimeMetrics?.weekendSlotsNext7Days,
+          weekend_days_with_slots: teeTimeMetrics?.weekendDaysWithSlots,
+          last_scraped_at: teeTimeMetrics?.lastScrapedAt,
+          caveat: "Availability depth is a proxy for flexibility/crowding, not measured pace of play.",
+        },
+        sourceType: "tee_times",
+        sourceUpdatedAt: teeTimeMetrics?.lastScrapedAt || null,
+      })
+    );
+  }
+
   return signals;
 }
 
@@ -630,6 +800,10 @@ function deriveEnrichment(clubId, club, signals) {
   const beginner = globalByKey.get("beginner_friendly");
   const wet = globalByKey.get("wet_weather_fit");
   const value = globalByKey.get("value_fit");
+  const availability = globalByKey.get("availability_confidence");
+  const weekendAvailability = globalByKey.get("weekend_availability_fit");
+  const fourball = globalByKey.get("fourball_fit");
+  const pace = globalByKey.get("pace_of_play_proxy");
 
   if (long?.signal_value === "strong") {
     roundFitTags.push("long_course");
@@ -649,6 +823,22 @@ function deriveEnrichment(clubId, club, signals) {
     roundFitTags.push("value_round");
     strengths.push("strong_value");
   }
+  if (availability?.signal_value === "strong") {
+    roundFitTags.push("good_availability");
+    strengths.push("fresh_tee_time_availability");
+  }
+  if (weekendAvailability?.signal_value === "strong") {
+    roundFitTags.push("weekend_availability");
+    strengths.push("weekend_availability_fit");
+  }
+  if (fourball?.signal_value === "strong") {
+    roundFitTags.push("fourball_friendly");
+    bestFor.push("group_of_four");
+  }
+  if (pace?.signal_value === "strong") {
+    roundFitTags.push("availability_depth");
+    strengths.push("pace_proxy_positive");
+  }
 
   const swAccess = byKey.get("access_fit:south_west_london");
   if (swAccess?.signal_value === "strong") strengths.push("south_west_london_access");
@@ -659,6 +849,8 @@ function deriveEnrichment(clubId, club, signals) {
   }
   if (wet?.confidence === CONFIDENCE.LOW) tradeoffs.push("conditions_signal_low_confidence");
   if (value?.confidence === CONFIDENCE.LOW) tradeoffs.push("value_signal_low_confidence");
+  if (!availability) tradeoffs.push("tee_time_availability_missing");
+  if (pace?.confidence === CONFIDENCE.LOW) tradeoffs.push("pace_signal_low_confidence");
 
   const lowSignals = signals.filter((signal) => signal.confidence === CONFIDENCE.LOW).length;
   const highSignals = signals.filter((signal) => signal.confidence === CONFIDENCE.HIGH).length;
@@ -685,10 +877,10 @@ function deriveEnrichment(clubId, club, signals) {
   };
 }
 
-function deriveDataQuality(clubId, { club, bookingUrl, play, condition, price, signals }) {
+function deriveDataQuality(clubId, { club, bookingUrl, play, condition, price, signals, teeTimeMetrics }) {
   const freshness = {
     condition: freshnessFromUpdatedAt(condition?.updated_at, 7, 14),
-    teeTime: "unknown",
+    teeTime: teeTimeMetrics?.isFresh ? "fresh" : teeTimeMetrics?.hasData ? "stale" : "unknown",
     price: "unknown",
     booking: bookingUrl ? "unknown" : null,
   };
@@ -703,7 +895,9 @@ function deriveDataQuality(clubId, { club, bookingUrl, play, condition, price, s
   if (!signals.some((signal) => signal.signal_key === "access_fit")) missing.push("access_signal");
   if (!signals.some((signal) => signal.signal_key === "fourball_fit")) missing.push("group_signal");
   if (!signals.some((signal) => signal.signal_key === "pace_of_play_proxy")) missing.push("pace_signal");
+  if (!signals.some((signal) => signal.signal_key === "availability_confidence")) missing.push("availability_signal");
   if (freshness.condition === "stale") stale.push("conditions");
+  if (freshness.teeTime === "stale") stale.push("tee_times");
 
   const hasCore = price && condition && play?.difficulty && bookingUrl && club.latitude !== null && club.longitude !== null;
   const overall =
@@ -721,7 +915,7 @@ function deriveDataQuality(clubId, { club, bookingUrl, play, condition, price, s
     has_difficulty_data: !!play?.difficulty,
     has_booking_data: !!bookingUrl,
     has_location_data: club.latitude !== null && club.longitude !== null,
-    has_tee_time_data: false,
+    has_tee_time_data: !!teeTimeMetrics?.hasData,
     has_access_signal: signals.some((signal) => signal.signal_key === "access_fit"),
     has_group_signal: signals.some((signal) => signal.signal_key === "fourball_fit"),
     has_pace_signal: signals.some((signal) => signal.signal_key === "pace_of_play_proxy"),
@@ -736,7 +930,8 @@ function deriveDataQuality(clubId, { club, bookingUrl, play, condition, price, s
       missing_count: missing.length,
       stale_count: stale.length,
       deterministic_backfill: true,
-      premium_proxy_signals_pending: ["fourball_fit", "weekend_capacity_proxy", "pace_of_play_proxy"],
+      tee_time_metrics: teeTimeMetrics || null,
+      premium_proxy_signals_pending: teeTimeMetrics?.hasData ? [] : ["fourball_fit", "weekend_capacity_proxy", "pace_of_play_proxy"],
     },
     generated_by: "round_agent_backfill",
     generated_at: new Date().toISOString(),
@@ -747,6 +942,39 @@ async function fetchSupabaseClubs(supabase) {
   const { data, error } = await supabase.from("clubs").select("id, club_name");
   if (error) throw new Error(`Failed to fetch clubs: ${error.message}`);
   return data || [];
+}
+
+async function fetchAllRows(supabase, table, select, pageSize = 1000) {
+  const rows = [];
+  for (let from = 0; ; from += pageSize) {
+    const to = from + pageSize - 1;
+    const { data, error } = await supabase.from(table).select(select).range(from, to);
+    if (error) throw new Error(`Failed to fetch ${table}: ${error.message}`);
+    rows.push(...(data || []));
+    if (!data || data.length < pageSize) break;
+  }
+  return rows;
+}
+
+async function fetchTeeTimeMetricsByClub(supabase) {
+  const rows = await fetchAllRows(
+    supabase,
+    "clublyst_tee_times_resolved",
+    "club_id, tee_time_at, local_date, local_time, local_dow, spots_available, scraped_at"
+  );
+  const rowsByClubId = new Map();
+  for (const row of rows) {
+    const clubId = String(row?.club_id || "");
+    if (!clubId) continue;
+    if (!rowsByClubId.has(clubId)) rowsByClubId.set(clubId, []);
+    rowsByClubId.get(clubId).push(row);
+  }
+  return new Map(
+    Array.from(rowsByClubId.entries()).map(([clubId, clubRows]) => [
+      clubId,
+      buildTeeTimeMetrics(clubRows),
+    ])
+  );
 }
 
 async function upsertInChunks(supabase, table, rows, options = {}) {
@@ -790,7 +1018,9 @@ async function main() {
         realtime: { transport: WebSocket },
       });
 
-  const supabaseClubs = supabase ? await fetchSupabaseClubs(supabase) : [];
+  const [supabaseClubs, teeTimeMetricsByClubId] = supabase
+    ? await Promise.all([fetchSupabaseClubs(supabase), fetchTeeTimeMetricsByClub(supabase)])
+    : [[], new Map()];
   const clubIdsByKey = new Map(
     supabaseClubs.map((club) => [normalizeClubKey(club.club_name), String(club.id)])
   );
@@ -816,6 +1046,7 @@ async function main() {
     const price = derivePrice(club);
     const county = String(club.county || "").toLowerCase().trim();
     const countyStats = countyPriceStats.get(county) || null;
+    const teeTimeMetrics = teeTimeMetricsByClubId.get(clubId) || null;
     const signals = deriveClubSignals({
       clubId,
       club,
@@ -824,11 +1055,12 @@ async function main() {
       condition,
       price,
       countyStats,
+      teeTimeMetrics,
     });
 
     allSignals.push(...signals);
     enrichments.push(deriveEnrichment(clubId, club, signals));
-    qualityRows.push(deriveDataQuality(clubId, { club, bookingUrl, play, condition, price, signals }));
+    qualityRows.push(deriveDataQuality(clubId, { club, bookingUrl, play, condition, price, signals, teeTimeMetrics }));
     processed.push(club.clubName);
   }
 
