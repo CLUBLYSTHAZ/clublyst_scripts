@@ -1,0 +1,56 @@
+name: Round Agent Ranking Harness
+
+on:
+  workflow_dispatch:
+    inputs:
+      canonical:
+        description: "Run canonical test prompts (true/false)"
+        required: false
+        default: "true"
+      prompt:
+        description: "Custom prompt when canonical=false"
+        required: false
+        default: ""
+      origin_context:
+        description: "Origin context for custom prompt"
+        required: false
+        default: "south_west_london"
+      limit:
+        description: "Number of ranked clubs per case"
+        required: false
+        default: "8"
+
+jobs:
+  ranking-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Round Agent ranking harness
+        run: |
+          ARGS=("--limit" "${{ github.event.inputs.limit }}")
+          if [ "${{ github.event.inputs.canonical }}" = "true" ]; then
+            ARGS+=("--canonical")
+          else
+            ARGS+=("--prompt" "${{ github.event.inputs.prompt }}")
+            ARGS+=("--origin-context" "${{ github.event.inputs.origin_context }}")
+          fi
+          npm run round-agent:ranking-harness -- "${ARGS[@]}"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Upload harness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: round-agent-ranking-harness-report
+          path: round-agent-ranking-harness-report.json
+          if-no-files-found: ignore
