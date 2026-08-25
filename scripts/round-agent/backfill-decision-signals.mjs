@@ -394,6 +394,38 @@ function buildTeeTimeMetrics(rows) {
   };
 }
 
+function parseRawTeeTimeAt(row) {
+  const dateText = String(row?.date || "").trim();
+  const timeText = String(row?.tee_time || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText)) return null;
+  const timeMatch = timeText.match(/^([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?\s*(am|pm)?$/i);
+  if (!timeMatch) return null;
+  let hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+  const meridiem = String(timeMatch[3] || "").toLowerCase();
+  if (meridiem === "pm" && hour < 12) hour += 12;
+  if (meridiem === "am" && hour === 12) hour = 0;
+  const normalizedTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
+  return `${dateText}T${normalizedTime}+01:00`;
+}
+
+function normalizeRawTeeTimeRow(row, clubId) {
+  const teeTimeAt = parseRawTeeTimeAt(row);
+  if (!teeTimeAt) return null;
+  const localDate = String(row?.date || "").trim();
+  const localTime = String(row?.tee_time || "").trim().slice(0, 5).padStart(5, "0");
+  const localDow = new Date(`${localDate}T00:00:00Z`).getUTCDay();
+  return {
+    club_id: clubId,
+    tee_time_at: teeTimeAt,
+    local_date: localDate,
+    local_time: localTime,
+    local_dow: localDow,
+    spots_available: row?.spots_available,
+    scraped_at: row?.scraped_at || row?.updated_at || null,
+  };
+}
+
 function availabilityScore(metrics) {
   if (!metrics?.hasData) return null;
   if (!metrics.isFresh) return 30;
@@ -956,12 +988,46 @@ async function fetchAllRows(supabase, table, select, pageSize = 1000) {
   return rows;
 }
 
-async function fetchTeeTimeMetricsByClub(supabase) {
-  const rows = await fetchAllRows(
+async function fetchTeeTimeMetricsByClub(supabase, supabaseClubs) {
+  const diagnostics = {
+    source: "clublyst_tee_times_resolved",
+    resolved_rows: 0,
+    raw_rows: 0,
+    matched_raw_rows: 0,
+    clubs_with_metrics: 0,
+    fallback_used: false,
+  };
+
+  let rows = await fetchAllRows(
     supabase,
     "clublyst_tee_times_resolved",
     "club_id, tee_time_at, local_date, local_time, local_dow, spots_available, scraped_at"
   );
+
+  diagnostics.resolved_rows = rows.length;
+
+  if (!rows.length) {
+    diagnostics.source = "tee_times";
+    diagnostics.fallback_used = true;
+    const clubIdsByKey = new Map(
+      (supabaseClubs || []).map((club) => [normalizeClubKey(club.club_name), String(club.id)])
+    );
+    const rawRows = await fetchAllRows(
+      supabase,
+      "tee_times",
+      "course_name, date, tee_time, spots_available, scraped_at, updated_at"
+    );
+    diagnostics.raw_rows = rawRows.length;
+    rows = rawRows
+      .map((row) => {
+        const clubId = clubIdsByKey.get(normalizeClubKey(row?.course_name));
+        if (!clubId) return null;
+        return normalizeRawTeeTimeRow(row, clubId);
+      })
+      .filter(Boolean);
+    diagnostics.matched_raw_rows = rows.length;
+  }
+
   const rowsByClubId = new Map();
   for (const row of rows) {
     const clubId = String(row?.club_id || "");
@@ -969,12 +1035,14 @@ async function fetchTeeTimeMetricsByClub(supabase) {
     if (!rowsByClubId.has(clubId)) rowsByClubId.set(clubId, []);
     rowsByClubId.get(clubId).push(row);
   }
-  return new Map(
+  const metricsByClub = new Map(
     Array.from(rowsByClubId.entries()).map(([clubId, clubRows]) => [
       clubId,
       buildTeeTimeMetrics(clubRows),
     ])
   );
+  diagnostics.clubs_with_metrics = metricsByClub.size;
+  return { metricsByClub, diagnostics };
 }
 
 async function upsertInChunks(supabase, table, rows, options = {}) {
@@ -1018,9 +1086,21 @@ async function main() {
         realtime: { transport: WebSocket },
       });
 
-  const [supabaseClubs, teeTimeMetricsByClubId] = supabase
-    ? await Promise.all([fetchSupabaseClubs(supabase), fetchTeeTimeMetricsByClub(supabase)])
-    : [[], new Map()];
+  const supabaseClubs = supabase ? await fetchSupabaseClubs(supabase) : [];
+  const teeTimeResult = supabase
+    ? await fetchTeeTimeMetricsByClub(supabase, supabaseClubs)
+    : {
+        metricsByClub: new Map(),
+        diagnostics: {
+          source: "not_loaded_dry_run",
+          resolved_rows: 0,
+          raw_rows: 0,
+          matched_raw_rows: 0,
+          clubs_with_metrics: 0,
+          fallback_used: false,
+        },
+      };
+  const teeTimeMetricsByClubId = teeTimeResult.metricsByClub;
   const clubIdsByKey = new Map(
     supabaseClubs.map((club) => [normalizeClubKey(club.club_name), String(club.id)])
   );
@@ -1090,6 +1170,7 @@ async function main() {
     data_quality_rows: qualityRows.length,
     signal_counts: countBy(allSignals, "signal_key"),
     confidence_counts: countBy(allSignals, "confidence"),
+    tee_time_diagnostics: teeTimeResult.diagnostics,
     unmatched: unmatched.slice(0, 50),
     generated_at: new Date().toISOString(),
   };
