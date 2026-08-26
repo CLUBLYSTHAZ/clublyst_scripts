@@ -598,6 +598,15 @@ Return JSON only:
 }`;
 }
 
+function buildRetryPrompt({ clubName, sourceFacts, flags }) {
+  return `${buildPrompt({ clubName, sourceFacts })}
+
+The previous draft failed these checks:
+${flags.map((flag) => `- ${flag.check}: ${flag.detail}`).join("\n")}
+
+Regenerate the JSON from scratch. Keep the same fields, fix the flagged issues, and do not introduce unsupported claims.`;
+}
+
 function extractJson(text) {
   const trimmed = String(text || "").trim();
   try {
@@ -679,6 +688,34 @@ async function generateWithOpenAI(prompt) {
   return extractJson(text);
 }
 
+async function generateValidatedRow({ clubName, sourceFacts }) {
+  const firstPrompt = buildPrompt({ clubName, sourceFacts });
+  const firstGenerated = await generateWithOpenAI(firstPrompt);
+  const firstValidated = validateGeneratedRow(firstGenerated, clubName, sourceFacts);
+  const firstFlags = lintSingleRow(firstValidated);
+
+  if (!firstFlags.length) {
+    return {
+      row: firstValidated,
+      repair_attempted: false,
+      repair_flags: [],
+    };
+  }
+
+  const retryPrompt = buildRetryPrompt({
+    clubName,
+    sourceFacts,
+    flags: firstFlags,
+  });
+  const retryGenerated = await generateWithOpenAI(retryPrompt);
+  const retryValidated = validateGeneratedRow(retryGenerated, clubName, sourceFacts);
+  return {
+    row: retryValidated,
+    repair_attempted: true,
+    repair_flags: firstFlags,
+  };
+}
+
 function flattenForSupport(value) {
   return JSON.stringify(value || {});
 }
@@ -753,7 +790,57 @@ function lintLengthContradiction(row) {
     return `yardage is ${yardage} (${yardageLengthBand}) but copy uses long-course language`;
   }
 
+  if (
+    yardageLengthBand === "medium" &&
+    /\b(short-length|short yardage|shorter layout|compact|long-length|longer layout|full-length|long hitter|long hitters)\b/.test(text)
+  ) {
+    return `yardage is ${yardage} (${yardageLengthBand}) but copy uses short/long-course language`;
+  }
+
   return null;
+}
+
+function lintSingleRow(row) {
+  const flags = [];
+  const supportText = flattenForSupport(row.source_facts);
+  const text = rowText(row);
+
+  for (const dimension of QUALITY_DIMENSIONS) {
+    if (dimension.claimPattern.test(text) && !dimension.supportPattern.test(supportText)) {
+      flags.push({
+        club_name: row.club_name,
+        check: "unsupported_quality_claim",
+        detail: dimension.label,
+      });
+    }
+  }
+
+  if (/\bthe data shows\b/i.test(row.why_pick_agent)) {
+    flags.push({
+      club_name: row.club_name,
+      check: "template_structure",
+      detail: 'why_pick_agent uses "the data shows"',
+    });
+  }
+
+  if (looksLikePriceOnlyValue(row)) {
+    flags.push({
+      club_name: row.club_name,
+      check: "weak_value_agent",
+      detail: "value_agent appears to restate price without a comparative judgment",
+    });
+  }
+
+  const lengthContradiction = lintLengthContradiction(row);
+  if (lengthContradiction) {
+    flags.push({
+      club_name: row.club_name,
+      check: "length_contradiction",
+      detail: lengthContradiction,
+    });
+  }
+
+  return flags;
 }
 
 function lintRows(rows) {
@@ -761,43 +848,7 @@ function lintRows(rows) {
   const openingByKey = new Map();
 
   for (const row of rows) {
-    const supportText = flattenForSupport(row.source_facts);
-    const text = rowText(row);
-
-    for (const dimension of QUALITY_DIMENSIONS) {
-      if (dimension.claimPattern.test(text) && !dimension.supportPattern.test(supportText)) {
-        flags.push({
-          club_name: row.club_name,
-          check: "unsupported_quality_claim",
-          detail: dimension.label,
-        });
-      }
-    }
-
-    if (/\bthe data shows\b/i.test(row.why_pick_agent)) {
-      flags.push({
-        club_name: row.club_name,
-        check: "template_structure",
-        detail: 'why_pick_agent uses "the data shows"',
-      });
-    }
-
-    if (looksLikePriceOnlyValue(row)) {
-      flags.push({
-        club_name: row.club_name,
-        check: "weak_value_agent",
-        detail: "value_agent appears to restate price without a comparative judgment",
-      });
-    }
-
-    const lengthContradiction = lintLengthContradiction(row);
-    if (lengthContradiction) {
-      flags.push({
-        club_name: row.club_name,
-        check: "length_contradiction",
-        detail: lengthContradiction,
-      });
-    }
+    flags.push(...lintSingleRow(row));
 
     const opening = normalizeOpening(row.why_pick_agent, row.club_name);
     if (!openingByKey.has(opening)) openingByKey.set(opening, []);
@@ -875,7 +926,8 @@ async function upsertGeneratedRows(supabase, rows) {
   if (error) throw new Error(`Failed to upsert ${TABLE_NAME}: ${error.message}`);
 }
 
-function printBatchSummary({ mode, totalTargets, batch, generatedRows, skipped, failed, flags }) {
+function printBatchSummary({ mode, totalTargets, batch, generatedRows, skipped, failed, repaired, flags }) {
+  const flaggedClubNames = new Set(flags.map((flag) => flag.club_name));
   const nextBatchIndex = batchIndex + 1;
   const hasNextBatch = batch.end < totalTargets;
   const summary = {
@@ -891,9 +943,15 @@ function printBatchSummary({ mode, totalTargets, batch, generatedRows, skipped, 
     generated_count: generatedRows.length,
     skipped_count: skipped.length,
     failed_count: failed.length,
+    repaired_count: repaired.length,
     lint_flag_count: flags.length,
+    write_suppressed_count:
+      mode === "write"
+        ? generatedRows.filter((row) => flaggedClubNames.has(row.club_name)).length
+        : 0,
     skipped,
     failed,
+    repaired,
     lint_flags: flags,
     next_command: hasNextBatch
       ? `node scripts/round-agent/generate-editorial-evidence.mjs ${useBrowseVisible ? "--browse-visible" : `--clubs "${clubArg}"`} --batch-size ${batchSize} --batch-index ${nextBatchIndex}${isWrite ? " --write" : " --dry-run"}`
@@ -965,6 +1023,7 @@ async function main() {
   const generatedRows = [];
   const skipped = [...missingIds];
   const failed = [];
+  const repaired = [];
 
   for (const club of batchWithIds) {
     if (processedClubIds.has(club.clubId)) {
@@ -987,14 +1046,19 @@ async function main() {
     });
 
     try {
-      const prompt = buildPrompt({
+      const generated = await generateValidatedRow({
         clubName: club.clubName,
         sourceFacts,
       });
-      const generated = await generateWithOpenAI(prompt);
-      const validated = validateGeneratedRow(generated, club.clubName, sourceFacts);
+      if (generated.repair_attempted) {
+        repaired.push({
+          club_name: club.clubName,
+          club_id: club.clubId,
+          original_flags: generated.repair_flags,
+        });
+      }
       generatedRows.push({
-        ...validated,
+        ...generated.row,
         club_id: club.clubId,
       });
     } catch (error) {
@@ -1007,9 +1071,11 @@ async function main() {
   }
 
   const flags = lintRows(generatedRows);
+  const flaggedClubNames = new Set(flags.map((flag) => flag.club_name));
+  const rowsSafeToWrite = generatedRows.filter((row) => !flaggedClubNames.has(row.club_name));
 
   if (isWrite) {
-    await upsertGeneratedRows(supabase, generatedRows);
+    await upsertGeneratedRows(supabase, rowsSafeToWrite);
   }
 
   console.log(
@@ -1017,6 +1083,7 @@ async function main() {
       {
         dry_run: !isWrite,
         destination: TABLE_NAME,
+        write_suppressed_count: isWrite ? generatedRows.length - rowsSafeToWrite.length : 0,
         previews: generatedRows,
       },
       null,
@@ -1030,6 +1097,7 @@ async function main() {
     generatedRows,
     skipped,
     failed,
+    repaired,
     flags,
   });
 }
