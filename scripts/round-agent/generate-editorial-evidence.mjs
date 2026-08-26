@@ -261,6 +261,11 @@ function readJsonArrayIfExists(filePath) {
   return Array.isArray(data) ? data : [];
 }
 
+function readJsonIfExists(filePath, fallback) {
+  if (!fs.existsSync(filePath)) return fallback;
+  return readJson(filePath);
+}
+
 function loadHiddenClubNames() {
   return new Set(
     readJsonArrayIfExists(hiddenClubsPath)
@@ -850,13 +855,13 @@ async function main() {
   const supabase = getSupabaseClient();
   await assertEvidenceTableExists(supabase);
 
-  const routeMaps = loadClubRouteMaps(repoRoot);
+  const routeMaps = loadClubRouteMaps();
   const staticRows = [
-    ...normalizeArrayData(readJson(clubsEnrichedPath), ["clubs", "rows", "data", "items"]),
-    ...normalizeArrayData(readJson(shortCoursesPath), ["clubs", "rows", "data", "items"]),
+    ...normalizeArrayData(readJsonIfExists(clubsEnrichedPath, []), ["clubs", "rows", "data", "items"]),
+    ...normalizeArrayData(readJsonIfExists(shortCoursesPath, []), ["clubs", "rows", "data", "items"]),
   ];
   const staticFactsByName = buildStaticClubFacts(staticRows);
-  const playabilityByName = buildPlayabilityFacts(readJson(playabilityPath));
+  const playabilityByName = buildPlayabilityFacts(readJsonIfExists(playabilityPath, []));
   const targetClubs = buildTargetClubs({ routeMaps, staticFactsByName });
   const batch = sliceBatch(targetClubs);
 
@@ -981,3 +986,4 @@ main().catch((error) => {
   console.error(`ERROR: ${error.message}`);
   process.exit(1);
 });
+
