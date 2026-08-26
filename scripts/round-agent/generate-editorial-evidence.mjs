@@ -14,7 +14,7 @@ const playabilityPath = path.join(repoRoot, "src/data/club_playability.json");
 const hiddenClubsPath = path.join(repoRoot, "src/data/hidden-clubs.json");
 
 const TABLE_NAME = "round_agent_editorial_evidence";
-const MODEL = process.env.ROUND_AGENT_EVIDENCE_MODEL || process.env.OPENAI_MODEL || "gpt-4.1";
+const MODEL = process.env.ROUND_AGENT_EVIDENCE_MODEL || process.env.OPENAI_MODEL || "gpt-4.1-mini";
 const DEFAULT_STATUS = "pending_review";
 const QUALITY_DIMENSIONS = [
   {
@@ -77,6 +77,7 @@ Rules:
 - Do not say "proper club golf", "honest club golf", "straightforward", "hidden gem", or "friendly welcome".
 - Every field must contain at least one concrete differentiator where the data supports it.
 - If the data is thin or contradictory, be specific about what is known and avoid invented atmosphere.
+- When source_facts.supabase.course.yardage exists, use source_facts.derived.yardage_length_band as the source of truth for course length language. Do not call a course short, medium, or long from playability.length_band if it conflicts with the yardage-derived band.
 - Any claim about a quality dimension requires a matching fact in source_facts. Do not make access, distance, drive-time, London, corridor, convenience, crowding, terrain, scenery, service, pace, or conditioning claims unless source_facts explicitly includes supporting evidence for that dimension, such as distanceKm/distanceMiles from a named origin, access_fit/travel_friction_fit, access_corridors, nearby transport/road data, postcode-derived origin comparison, tee-time/pace signals, terrain data, condition data, facilities data, or verified course notes. If a dimension is not represented in source_facts, write around it rather than filling the gap with plausible general knowledge.
 - Do not structure why_pick_agent as "claim + the data shows...".
 - value_agent must make a comparative judgment. Do not restate the price as the whole point.
@@ -352,6 +353,14 @@ function toFiniteNumber(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+function inferLengthBandFromYards(yardage) {
+  const yards = toFiniteNumber(yardage);
+  if (yards === null) return null;
+  if (yards >= 6300) return "long";
+  if (yards >= 5600) return "medium";
+  return "short";
+}
+
 function buildStaticClubFacts(rows) {
   const byName = new Map();
 
@@ -552,10 +561,21 @@ function serialiseSupabaseFacts(facts) {
 }
 
 function compactSourceFacts({ staticFacts, playabilityFacts, supabaseFacts }) {
+  const yardage = toFiniteNumber(supabaseFacts?.course?.yardage);
+  const yardageLengthBand = inferLengthBandFromYards(yardage);
+  const derived = {
+    yardage,
+    yardage_length_band: yardageLengthBand,
+    playability_length_band_conflict:
+      Boolean(yardageLengthBand && playabilityFacts?.length_band) &&
+      yardageLengthBand !== playabilityFacts.length_band,
+  };
+
   return {
     static: serialiseStaticFacts(staticFacts),
     playability: playabilityFacts || null,
     supabase: serialiseSupabaseFacts(supabaseFacts),
+    derived,
   };
 }
 
@@ -713,6 +733,29 @@ function looksLikePriceOnlyValue(row) {
   return withoutPrices.length < 32 || !comparative;
 }
 
+function lintLengthContradiction(row) {
+  const yardage = toFiniteNumber(row.source_facts?.derived?.yardage);
+  const yardageLengthBand = row.source_facts?.derived?.yardage_length_band;
+  if (!yardage || !yardageLengthBand) return null;
+
+  const text = rowText(row).toLowerCase();
+  if (
+    yardageLengthBand === "long" &&
+    /\b(short|shorter|compact|not a long hitter|not a long hitter's|not a long hitters)\b/.test(text)
+  ) {
+    return `yardage is ${yardage} (${yardageLengthBand}) but copy uses short-course language`;
+  }
+
+  if (
+    yardageLengthBand === "short" &&
+    /\b(long|longer|full-length|long hitter|long hitters)\b/.test(text)
+  ) {
+    return `yardage is ${yardage} (${yardageLengthBand}) but copy uses long-course language`;
+  }
+
+  return null;
+}
+
 function lintRows(rows) {
   const flags = [];
   const openingByKey = new Map();
@@ -744,6 +787,15 @@ function lintRows(rows) {
         club_name: row.club_name,
         check: "weak_value_agent",
         detail: "value_agent appears to restate price without a comparative judgment",
+      });
+    }
+
+    const lengthContradiction = lintLengthContradiction(row);
+    if (lengthContradiction) {
+      flags.push({
+        club_name: row.club_name,
+        check: "length_contradiction",
+        detail: lengthContradiction,
       });
     }
 
@@ -986,4 +1038,3 @@ main().catch((error) => {
   console.error(`ERROR: ${error.message}`);
   process.exit(1);
 });
-
