@@ -39,7 +39,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          ROUND_AGENT_EVIDENCE_MODEL: ${{ vars.ROUND_AGENT_EVIDENCE_MODEL || vars.OPENAI_MODEL || 'gpt-4.1' }}
+          ROUND_AGENT_EVIDENCE_MODEL: ${{ vars.ROUND_AGENT_EVIDENCE_MODEL || vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
         run: |
           ARGS=(
             "--browse-visible"
