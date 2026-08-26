@@ -3,7 +3,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 import ws from "ws";
-import { loadClubRouteMaps, slugify } from "../lib/club-route-utils.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +11,7 @@ const repoRoot = path.resolve(__dirname, "../..");
 const clubsEnrichedPath = path.join(repoRoot, "src/data/clubs-enriched.json");
 const shortCoursesPath = path.join(repoRoot, "src/data/short-courses-enriched.json");
 const playabilityPath = path.join(repoRoot, "src/data/club_playability.json");
+const hiddenClubsPath = path.join(repoRoot, "src/data/hidden-clubs.json");
 
 const TABLE_NAME = "round_agent_editorial_evidence";
 const MODEL = process.env.ROUND_AGENT_EVIDENCE_MODEL || process.env.OPENAI_MODEL || "gpt-4.1";
@@ -131,6 +131,206 @@ function normalizeName(name) {
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+const CLUB_NAME_CANONICAL_OVERRIDES = {
+  "Breadsall Priory Country Club": "Breadsall Priory Golf Club",
+  "Breadsall Priory Country Club (Championship Priory Course)":
+    "Breadsall Priory Golf Club",
+  "Breadsall Priory Country Club (Moorland Course)":
+    "Breadsall Priory Golf Club",
+  "Cams Hall Estate Golf Club (Creek Course)": "Cams Hall Estate Golf Club",
+  "Cams Hall Estate Golf Club (Park Course)": "Cams Hall Estate Golf Club",
+  "Carden Park (The Cheshire Course)": "Carden Park",
+  "Carden Park (The Nicklaus Course)": "Carden Park",
+  "Chelsfield Lakes Golf Centre (The Lakes)": "Chelsfield Lakes Golf Centre",
+  "East Horton Golf Club (The Greenwood Course)": "East Horton Golf Club",
+  "East Horton Golf Club (The Parkland Course)": "East Horton Golf Club",
+  "Eaton Golf Club (Chester)": "Eaton Golf Club",
+  "Forest of Arden Country Club (Aylesford Course)":
+    "Forest of Arden Country Club",
+  "Forest of Arden Country Club (Championship Arden Course)":
+    "Forest of Arden Country Club",
+  "Goswick Golf Links": "Goswick Golf Club",
+  "Hampton Court Palace Golf Club": "Hampton Court Palace",
+  "Holtye Golf Club": "Holtye",
+  "Macdonald Hill Valley Hotel Golf & Country Club (Emerald Course)":
+    "Macdonald Hill Valley Hotel Golf & Country Club",
+  "Macdonald Portal Hotel, Golf & Spa (Arderne Course)":
+    "Portal Golf & Country Club",
+  "Macdonald Portal Hotel, Golf & Spa (Championship Course)":
+    "Portal Golf & Country Club",
+  "Macdonald Portal Hotel, Golf & Spa (Premier Course)":
+    "Portal Golf & Country Club",
+  "Macdonald Portal Hotel, Golf & Spa": "Portal Golf & Country Club",
+  "Mannings Heath Golf & Wine Estate": "Mannings Heath",
+  "Oakmere Golf Club (Admirals Course)": "Oakmere Golf Club",
+  "Oakmere Golf Club (Commanders Course)": "Oakmere Golf Club",
+  "Queen's Park Golf Club": "Queens Park Golf Club",
+  "Rudding Park Golf Club (Hawtree Championship Course)":
+    "Rudding Park Golf Club",
+  "Sherfield Oaks Golf Club (Waterloo Course)": "Sherfield Oaks Golf Club",
+  "Sherfield Oaks Golf Club (Wellington Course)": "Sherfield Oaks Golf Club",
+  "St Enodoc Golf Club (Church Course)": "St Enodoc Golf Club",
+  "St Enodoc Golf Club (Holywell Course)": "St Enodoc Golf Club",
+  "St Mellion Golf Club (Kernow Course)": "St Mellion Golf Club",
+  "St Mellion Golf Club (Nicklaus Course)": "St Mellion Golf Club",
+  "Stonebridge Golf Club (Blythe Course)": "Stonebridge Golf Club",
+  "Stonebridge Golf Club (Hampton Course)": "Stonebridge Golf Club",
+  "Stonebridge Golf Club (Somers Course)": "Stonebridge Golf Club",
+  Sweetwoods: "Sweetwoods Park Golf Club",
+  "Tandridge Golf Club": "Tandridge",
+  "The Oaks Golf Centre (9-Hole Short Course)": "The Oaks",
+  "The Shire London (Academy Course)": "The Shire London",
+  "The West Lancashire Golf Club": "West Lancashire Golf Club",
+  "Woodbury Park Hotel & Golf Club (The Oaks)":
+    "Woodbury Park Hotel & Golf Club",
+};
+
+const CLUB_NAME_ALIASES_BY_CANONICAL = Object.entries(
+  CLUB_NAME_CANONICAL_OVERRIDES
+).reduce((acc, [variantName, canonicalName]) => {
+  if (!acc[canonicalName]) acc[canonicalName] = [];
+  acc[canonicalName].push(variantName);
+  return acc;
+}, {});
+
+function slugify(name) {
+  return String(name || "")
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function getCanonicalClubName(name) {
+  const raw = String(name || "").trim();
+  if (!raw) return "";
+  return CLUB_NAME_CANONICAL_OVERRIDES[raw] || raw;
+}
+
+function normalizeClubName(name) {
+  return getCanonicalClubName(name)
+    .toLowerCase()
+    .trim()
+    .replace(/\s*&\s*/g, " and ")
+    .replace(/\s+golf\s+club$/i, "")
+    .replace(/\s+golf\s+and\s+country\s+club$/i, "")
+    .replace(/\s+country\s+club$/i, "")
+    .replace(/\s+golf\s+course$/i, "")
+    .replace(/\s+golf\s+centre$/i, "")
+    .replace(/\s+golf\s+center$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getClubNameAliases(name) {
+  const canonicalName = getCanonicalClubName(name);
+  if (!canonicalName) return [];
+
+  return Array.from(
+    new Set([
+      canonicalName,
+      ...(CLUB_NAME_ALIASES_BY_CANONICAL[canonicalName] || []),
+      String(name || "").trim(),
+    ])
+  ).filter(Boolean);
+}
+
+function slugCandidates(name) {
+  const raw = String(name || "").trim();
+  if (!raw) return [];
+
+  const variants = [
+    raw,
+    raw.replace(/&/g, "and"),
+    raw.replace(/\bthe\b/gi, ""),
+    raw.replace(/\bgolf club\b/gi, ""),
+    raw.replace(/\bgolf course\b/gi, ""),
+    raw.replace(/\bcountry club\b/gi, ""),
+    raw.replace(/\bgc\b/gi, ""),
+  ];
+
+  return Array.from(new Set(variants.map(slugify).filter(Boolean)));
+}
+
+function readJsonArrayIfExists(filePath) {
+  if (!fs.existsSync(filePath)) return [];
+  const data = readJson(filePath);
+  return Array.isArray(data) ? data : [];
+}
+
+function loadHiddenClubNames() {
+  return new Set(
+    readJsonArrayIfExists(hiddenClubsPath)
+      .map((name) => getCanonicalClubName(String(name || "").trim()))
+      .filter(Boolean)
+  );
+}
+
+function loadClubRouteMaps() {
+  const hiddenClubNames = loadHiddenClubNames();
+  const rows = [
+    ...readJsonArrayIfExists(clubsEnrichedPath),
+    ...readJsonArrayIfExists(shortCoursesPath),
+  ].filter((row) => {
+    const clubName = getCanonicalClubName(
+      String(row?.["Club Name"] || row?.clubName || "").trim()
+    );
+    return clubName && !hiddenClubNames.has(clubName);
+  });
+
+  const clubsByName = new Map();
+  for (const row of rows) {
+    const rawName = String(row?.["Club Name"] || row?.clubName || "").trim();
+    if (!rawName) continue;
+
+    const clubName = getCanonicalClubName(rawName);
+    if (!clubsByName.has(clubName)) {
+      clubsByName.set(clubName, {
+        clubName,
+        canonicalSlug: slugify(clubName),
+        county: String(row?.["Location (County)"] || row?.location || "").trim(),
+        rawNames: new Set(),
+      });
+    }
+
+    const club = clubsByName.get(clubName);
+    club.rawNames.add(rawName);
+    if (!club.county) {
+      club.county = String(row?.["Location (County)"] || row?.location || "").trim();
+    }
+  }
+
+  const canonicalBySlug = new Map();
+  const lookupBySlug = new Map();
+  for (const club of clubsByName.values()) {
+    canonicalBySlug.set(club.canonicalSlug, club);
+    const names = new Set([
+      club.clubName,
+      ...club.rawNames,
+      ...getClubNameAliases(club.clubName),
+    ]);
+
+    for (const name of names) {
+      const candidates = [
+        slugify(name),
+        slugify(normalizeClubName(name)),
+        ...slugCandidates(name),
+      ].filter(Boolean);
+
+      for (const candidate of candidates) {
+        if (!lookupBySlug.has(candidate)) lookupBySlug.set(candidate, club);
+      }
+    }
+  }
+
+  return {
+    clubs: Array.from(clubsByName.values()),
+    canonicalBySlug,
+    lookupBySlug,
+  };
 }
 
 function normalizeGreenFee(value) {
