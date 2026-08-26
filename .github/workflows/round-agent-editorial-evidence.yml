@@ -1,0 +1,56 @@
+name: Round Agent Editorial Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      write:
+        description: "Write pending_review rows to Supabase. Leave false for dry-run previews."
+        type: boolean
+        default: false
+      batch_size:
+        description: "Number of clubs to process in this batch."
+        type: number
+        default: 50
+      batch_index:
+        description: "Zero-based batch index to run."
+        type: number
+        required: true
+        default: 0
+
+jobs:
+  editorial-evidence:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Round Agent editorial evidence
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ROUND_AGENT_EVIDENCE_MODEL: ${{ vars.ROUND_AGENT_EVIDENCE_MODEL || vars.OPENAI_MODEL || 'gpt-4.1' }}
+        run: |
+          ARGS=(
+            "--browse-visible"
+            "--batch-size" "${{ inputs.batch_size }}"
+            "--batch-index" "${{ inputs.batch_index }}"
+          )
+
+          if [ "${{ inputs.write }}" = "true" ]; then
+            ARGS+=("--write")
+          else
+            ARGS+=("--dry-run")
+          fi
+
+          node scripts/round-agent/generate-editorial-evidence.mjs "${ARGS[@]}"
